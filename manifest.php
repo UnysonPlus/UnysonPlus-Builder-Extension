@@ -6,7 +6,7 @@ $manifest['name']        = __( 'Builder', 'fw' );
 $manifest['slug']        = 'unyson-builder';
 $manifest['description'] = __( 'Unyson Page Builder Extension', 'fw' );
 
-$manifest['version']     = '1.2.12';
+$manifest['version']     = '1.2.13';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 
