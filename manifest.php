@@ -3,12 +3,9 @@
 $manifest = array();
 
 $manifest['name']        = __( 'Builder', 'fw' );
-$manifest['slug']        = 'unyson-builder';
 $manifest['description'] = __( 'Unyson Page Builder Extension', 'fw' );
 
 $manifest['version']     = '1.2.13';
-$manifest['display']     = true;
-$manifest['standalone']  = true;
 
 // Repository Info
 $manifest['github_update'] = 'ThemeFuse/Unyson-Builder-Extension';
@@ -16,8 +13,8 @@ $manifest['github_repo']   = 'https://github.com/ThemeFuse/Unyson-Builder-Extens
 $manifest['github_branch'] = 'master';
 
 // Author Info
-$manifest['author']     = 'ThemeFuse';
-$manifest['author_uri'] = 'http://themefuse.com/';
+$manifest['author']     = 'UnysonPlus';
+$manifest['author_uri'] = 'https://www.lastimosa.com.ph/unysonplus';
 
 // Meta
 $manifest['license']      = 'GPL-2.0-or-later';
