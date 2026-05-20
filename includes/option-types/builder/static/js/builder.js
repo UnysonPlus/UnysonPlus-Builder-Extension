@@ -390,7 +390,85 @@ jQuery( document ).ready( function ( $ ) {
 								} );
 							}
 
-							var rearrangeTimeout;
+							// Throttle handles for the custom _rearrange override below.
+							//
+							// Same-container placeholder moves use requestAnimationFrame (snappy,
+							// ~16ms / 1 frame) — keeps reordering inside a column feeling instant.
+							//
+							// Cross-container moves (cursor crossed into a connected sortable's
+							// items list, e.g. dragging from column A into column B) use a ~100ms
+							// settle timer so the destination doesn't grow / reflow under a hovering
+							// cursor. pendingCrossTarget holds the DOM node of the pending target
+							// so subsequent cursor movement WITHIN that target doesn't reset the
+							// timer (the timer only resets when the target itself changes).
+							var rearrangeRAF = null;
+							var rearrangeContainerTimeout = null;
+							var pendingCrossTarget = null;
+
+							// FLIP animation helpers — smooth sibling motion when the placeholder
+							// commits to a new container or shifts within the current one. CSS
+							// transitions don't fire on flow-driven position changes (siblings
+							// shifting because a neighbor entered or left the DOM), so we use the
+							// standard FLIP technique:
+							//
+							//   First  — snapshot every relevant .builder-item's bounding rect
+							//            before the move
+							//   Last   — let the actual DOM rearrange happen (jumping items)
+							//   Invert — compute each moved item's old-vs-new offset, snap it back
+							//            to its old visual position via transform: translate(dx, dy)
+							//   Play   — transition transform back to 0, producing a smooth slide
+							//
+							// The dragged helper is skipped because jQuery UI already positions it
+							// via top/left every mousemove.
+							//
+							// Pass a jQuery collection to scope the capture — same-container reorders
+							// only need the current sortable's children (cheap, runs every rAF),
+							// cross-container commits FLIP the whole tree (more visual change to
+							// cover, fires once per ~100ms settle).
+							function captureItemRectsForFlip( $items ) {
+								var captured = [];
+								$items.each( function () {
+									if ( this.classList && this.classList.contains( 'ui-sortable-helper' ) ) {
+										return;
+									}
+									captured.push( { el: this, rect: this.getBoundingClientRect() } );
+								} );
+								return captured;
+							}
+
+							function flipPlay( captured, durationMs ) {
+								captured.forEach( function ( entry ) {
+									var el = entry.el;
+									if ( ! el.parentNode ) return;
+									if ( el.classList && el.classList.contains( 'ui-sortable-helper' ) ) return;
+
+									var after = el.getBoundingClientRect();
+									var dx = entry.rect.left - after.left;
+									var dy = entry.rect.top - after.top;
+									if ( Math.abs( dx ) < 1 && Math.abs( dy ) < 1 ) return;
+
+									// Invert: snap to old position via transform.
+									el.style.transition = 'none';
+									el.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+									// Force a synchronous reflow so the transform commits before
+									// we change the transition rule (otherwise the browser batches
+									// the inverted transform with the play one and nothing animates).
+									// eslint-disable-next-line no-unused-expressions
+									el.offsetHeight;
+
+									// Play: animate transform back to 0.
+									el.style.transition = 'transform ' + durationMs + 'ms ease-out';
+									el.style.transform = '';
+
+									// Clean up so stale styles don't follow this element into later drags.
+									var onEnd = function () {
+										el.style.transition = '';
+										el.style.transform = '';
+										el.removeEventListener( 'transitionend', onEnd );
+									};
+									el.addEventListener( 'transitionend', onEnd );
+								} );
+							}
 
 							var additionalSortableOptions = {}
 
@@ -457,16 +535,18 @@ jQuery( document ).ready( function ( $ ) {
 									var movedItemType = movedItem.get( 'type' );
 
 									/**
-									 * add "allowed" classes to items vies where allowIncomingType(movedItemType) returned true
-									 * else add "denied" class
+									 * Add "allowed" / "denied" classes to every item in the tree.
+									 *
+									 * Deferred to the next animation frame so the synchronous tree
+									 * walk doesn't block the main thread the moment the user starts
+									 * dragging. One frame of latency is invisible; the main-thread
+									 * stall on a large builder is not.
 									 */
-									{
-										{
-											if ( movedItem.allowDestinationType( null ) ) {
-												builder.rootItems.view.$el.addClass( 'fw-builder-item-allow-incoming-type' );
-											} else {
-												builder.rootItems.view.$el.addClass( 'fw-builder-item-deny-incoming-type' );
-											}
+									requestAnimationFrame( function () {
+										if ( movedItem.allowDestinationType( null ) ) {
+											builder.rootItems.view.$el.addClass( 'fw-builder-item-allow-incoming-type' );
+										} else {
+											builder.rootItems.view.$el.addClass( 'fw-builder-item-deny-incoming-type' );
 										}
 
 										forEachItemRecursive( builder.rootItems, function ( item ) {
@@ -485,34 +565,62 @@ jQuery( document ).ready( function ( $ ) {
 												item.view.$el.addClass( 'fw-builder-item-deny-incoming-type' );
 											}
 										} );
-									}
+									} );
 
-									// Freeze the container height
-									{
-										var container = builder.$input.closest( '.fw-option-type-builder' )
-										                       .find( '.builder-root-items > .builder-items' );
-
-										container.css( 'min-height', container.height() + 'px' );
-									}
+									// Freeze every .builder-items container's height for the
+									// duration of the drag. Without this, the destination column
+									// grows when the placeholder enters it (visible as "moves
+									// down") and the source column collapses when the placeholder
+									// leaves it — both yank things under the cursor. Tagging with
+									// a data-flag lets the stop callback unfreeze exactly the
+									// same set we pinned, even if Backbone re-renders mid-drag.
+									builder.$input.closest( '.fw-option-type-builder' )
+									       .find( '.builder-items' )
+									       .each( function () {
+									           var $c = $( this );
+									           $c.data( 'fw-frozen-height', true )
+									             .css( 'min-height', $c.height() + 'px' );
+									       } );
 								},
 								stop: function ( event, ui ) {
-									clearTimeout( rearrangeTimeout );
+									if ( rearrangeRAF ) {
+										cancelAnimationFrame( rearrangeRAF );
+										rearrangeRAF = null;
+									}
+									if ( rearrangeContainerTimeout ) {
+										clearTimeout( rearrangeContainerTimeout );
+										rearrangeContainerTimeout = null;
+									}
+									pendingCrossTarget = null;
 
 									itemsRemoveAllowedDeniedClasses();
 
 									ui.item.parents( '.builder-root-items' ).removeClass( 'fw-move-simple-item' );
 
-									// unfreeze the container height
-									{
-										var container = builder.$input.closest( '.fw-option-type-builder' )
-										                       .find( '.builder-root-items > .builder-items' );
+									// Unfreeze every container we tagged at drag-start. Walking by
+									// the data-flag keeps the unfreeze symmetric with the freeze
+									// in start() — only the containers we explicitly pinned get
+									// their inline min-height cleared.
+									builder.$input.closest( '.fw-option-type-builder' )
+									       .find( '.builder-items' )
+									       .each( function () {
+									           var $c = $( this );
+									           if ( $c.data( 'fw-frozen-height' ) ) {
+									               $c.removeData( 'fw-frozen-height' )
+									                 .css( 'min-height', '' );
+									           }
+									       } );
 
-										container.css( 'min-height', '' );
-									}
-
-									if (ui.helper) {
-										$(ui.helper).remove()
-									}
+									// NOTE: do not call $(ui.helper).remove() here. With this
+									// sortable's `helper: 'original'` option, ui.helper === ui.item
+									// — the actual dragged shortcode. Removing it would silently
+									// delete the just-placed element from the DOM (Backbone model
+									// still holds the data, so a page refresh "restored" it). That
+									// was the intermittent "shortcode goes invisible after drag"
+									// bug. jQuery UI's internal _clear()/_mouseStop() already
+									// restores the dragged element to normal flow and clears the
+									// transient inline styles (position, top/left, opacity, etc.)
+									// applied during drag — no manual cleanup is needed here.
 								},
 								receive: function ( event, ui ) {
 									// sometimes the "stop" event is not triggered and classes remains
@@ -654,41 +762,82 @@ jQuery( document ).ready( function ( $ ) {
 
 									var index = ui.item.index();
 
-									// change item position in collection
-									{
-										var collection = item.collection;
-
-										// prevent 'remove', that will remove all events from the element
-										item.view.$el.detach();
-
-										collection.remove( item );
-
-										collection.add( item, {at: index} );
-									}
+									// Sync the collection's internal order to the new DOM order.
+									//
+									// jQuery UI has already moved the <element> into its new
+									// position in `this.$el`, so we don't need to touch the DOM
+									// at all. The previous implementation did remove()+add() which
+									// fired Backbone 'remove' and 'add' events — each triggering
+									// a full ItemsView.render() that destroyed and re-initialized
+									// the sortable instance. For builders with 30+ items that
+									// produced a visible hitch on every drop.
+									//
+									// Doing the remove/add silently keeps the Backbone collection's
+									// internal order in sync without firing render(). We then fire
+									// `builder:change` once so the input value gets re-serialized
+									// and the undo/redo history records the move.
+									var collection = item.collection;
+									collection.remove( item, { silent: true } );
+									collection.add( item, { at: index, silent: true } );
+									builder.rootItems.trigger( 'builder:change' );
 								}
 							}, additionalSortableOptions) );
 
 							/**
-							 * Delay placeholder possition change to prevent "jumping"
+							 * Custom _rearrange override with two paths:
+							 *
+							 *  - Same-container reorder (placeholder moves between sibling items
+							 *    in the SAME .builder-items list): scheduled with rAF (~16ms /
+							 *    next paint). Reordering inside a column feels instant.
+							 *
+							 *  - Cross-container move (`a` is set, i.e. jQuery UI's _contactContainers
+							 *    has decided the cursor entered a connected sortable container —
+							 *    e.g. dragging from one column into another, especially an empty
+							 *    one): scheduled with a 250ms settle timeout. The destination
+							 *    column can't grow / flutter under a hovering cursor because the
+							 *    placeholder doesn't commit unless the user lingers there. If they
+							 *    keep moving, the timer cancels and resets.
+							 *
 							 * Fixes https://github.com/ThemeFuse/Unyson-PageBuilder-Extension/issues/25
 							 * Original code https://github.com/jquery/jquery-ui/blob/1.12.0-rc.2/ui/widgets/sortable.js#L1384
-							 * Note: Uses the above `var rearrangeTimeout;`
 							 */
 							this.$el.sortable( 'instance' )._rearrange = function ( event, i, a, hardRefresh ) {
-								clearTimeout( rearrangeTimeout );
+								// Determine where the placeholder lives now vs where this call
+								// wants to move it. jQuery UI's `a` arg is set only for one path
+								// (contacting an empty connected container) — when the cursor
+								// crosses into a non-empty sibling container, `a` is undefined
+								// but i.item[0].parentNode is still a DIFFERENT container. Compare
+								// the actual parents to detect cross-container moves reliably.
+								var currentParent = ( this.placeholder && this.placeholder[0] )
+									? this.placeholder[0].parentNode
+									: null;
+								var targetParent = a ? a[0] : ( i && i.item ? i.item[0].parentNode : null );
+								var isCrossContainer = !! ( currentParent && targetParent && currentParent !== targetParent );
 
-								rearrangeTimeout = setTimeout( function () {
+								var ctx = {
+									instance: this,
+									i: i,
+									a: a,
+									hardRefresh: hardRefresh,
+									direction: this.direction
+								};
+
+								var doRearrange = function () {
+									rearrangeRAF = null;
+									rearrangeContainerTimeout = null;
+									pendingCrossTarget = null;
+
 									/* The Original Code:
 									 a ? a[0].appendChild(this.placeholder[0]) : i.item[0].parentNode.insertBefore(this.placeholder[0], (this.direction === "down" ? i.item[0] : i.item[0].nextSibling));
 									 */
-									if ( this.a ) {
-										this.a[0].appendChild( this.instance.placeholder[0] );
+									if ( ctx.a ) {
+										ctx.a[0].appendChild( ctx.instance.placeholder[0] );
 									} else {
-										if ( this.instance.placeholder.parent().length ) {
-											this.i.item[0].parentNode.insertBefore(
-												this.instance.placeholder[0],
+										if ( ctx.instance.placeholder.parent().length ) {
+											ctx.i.item[0].parentNode.insertBefore(
+												ctx.instance.placeholder[0],
 												(
-													this.direction === "down" ? this.i.item[0] : this.i.item[0].nextSibling
+													ctx.direction === "down" ? ctx.i.item[0] : ctx.i.item[0].nextSibling
 												)
 											);
 										} else {
@@ -699,29 +848,75 @@ jQuery( document ).ready( function ( $ ) {
 										}
 									}
 
-									/* The Original Code:
-									 //Various things done here to improve the performance:
-									 // 1. we create a setTimeout, that calls refreshPositions
-									 // 2. on the instance, we have a counter variable, that get's higher after every append
-									 // 3. on the local scope, we copy the counter variable, and check in the timeout, if it's still the same
-									 // 4. this lets only the last addition to the timeout stack through
-									 this.counter = this.counter ? ++this.counter : 1;
-									 var counter = this.counter;
+									ctx.instance.refreshPositions( ! ctx.hardRefresh );
+								};
 
-									 this._delay(function() {
-									 if(counter === this.counter) {
-									 this.refreshPositions(!hardRefresh); //Precompute after each DOM insertion, NOT on mousemove
-									 }
-									 });
-									 */
-									this.instance.refreshPositions( ! this.hardRefresh );
-								}.bind( {
-									instance: this,
-									i: i,
-									a: a,
-									hardRefresh: hardRefresh,
-									direction: this.direction
-								} ), 100 );
+								if ( isCrossContainer ) {
+									// Cross-container move: ~100ms settle delay.
+									//
+									// CRITICAL: only RESET the timer when the target itself changes.
+									// jQuery UI calls _rearrange on every mousemove, so if we cleared
+									// the timer on every call we'd never let it fire while the user
+									// kept moving. Instead, while the cursor stays in the SAME target
+									// container, leave the existing timer alone — it ticks down even
+									// as the user moves around inside the target.
+									if ( pendingCrossTarget === targetParent ) {
+										// Same target as last call; let the running timer continue.
+										return;
+									}
+
+									// Target changed (or no timer yet). Cancel any old timer,
+									// schedule a fresh one, and remember which target it's for.
+									if ( rearrangeContainerTimeout ) {
+										clearTimeout( rearrangeContainerTimeout );
+									}
+									if ( rearrangeRAF ) {
+										cancelAnimationFrame( rearrangeRAF );
+										rearrangeRAF = null;
+									}
+									pendingCrossTarget = targetParent;
+									rearrangeContainerTimeout = setTimeout( function () {
+										// Snapshot positions BEFORE the move, then do the move,
+										// then play the FLIP animation so siblings slide to their
+										// new spots instead of jumping. Cross-container commits are
+										// the most visually disruptive moments — they're worth the
+										// few-ms animation cost. Scope the FLIP to every
+										// .builder-item in the builder since columns / rows
+										// upstream of the move can also shift.
+										var $all = builder.$input
+											.closest( '.fw-option-type-builder' )
+											.find( '.builder-item' );
+										var beforeRects = captureItemRectsForFlip( $all );
+										doRearrange();
+										flipPlay( beforeRects, 250 );
+									}, 100 );
+								} else {
+									// Same-container reorder: capture the current sortable's direct
+									// children, do the rAF move, then FLIP-animate.
+									//
+									// Scope is limited to direct children of the current sortable
+									// (the placeholder's parent) because only the immediate siblings
+									// shift when the placeholder moves within a single list. Deeper
+									// descendants ride along inside their parent's transform; no
+									// need to FLIP them individually. Keeps the per-frame cost low
+									// even on large builders.
+									if ( rearrangeContainerTimeout ) {
+										clearTimeout( rearrangeContainerTimeout );
+										rearrangeContainerTimeout = null;
+										pendingCrossTarget = null;
+									}
+									if ( rearrangeRAF ) {
+										cancelAnimationFrame( rearrangeRAF );
+									}
+									var $siblings = currentParent
+										? $( currentParent ).children( '.builder-item' )
+										: $();
+									rearrangeRAF = requestAnimationFrame( function () {
+										var beforeRects = captureItemRectsForFlip( $siblings );
+										doRearrange();
+										flipPlay( beforeRects, 200 );
+									} );
+								}
 							};
 
 							return true;
