@@ -7,4 +7,16 @@ if (!is_admin()) {
 		array(),
 		fw_ext('builder')->manifest->get_version()
 	);
+
+	// Bootstrap 3 legacy grid stylesheet (with .fw- prefixed classes). Off by
+	// default; opt-in via the page-builder settings for sites migrating from
+	// the original Unyson plugin so their existing .fw-container / .fw-row
+	// markup keeps rendering correctly. Page-builder's main class decides
+	// whether to enqueue this handle (see class-fw-extension-page-builder.php).
+	wp_register_style(
+		'fw-ext-builder-bootstrap-3-legacy',
+		fw_ext('builder')->get_uri('/static/css/bootstrap-3-legacy.css'),
+		array(),
+		fw_ext('builder')->manifest->get_version()
+	);
 }
