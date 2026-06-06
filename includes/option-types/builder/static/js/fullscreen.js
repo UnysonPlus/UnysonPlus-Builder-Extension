@@ -75,6 +75,7 @@
 					url: ajaxurl,
 					data: {
 						'action': 'fw_builder_fullscreen_set_storage_item',
+						'_nonce': localized.nonce,
 						'post_id': utils.getPostId()
 					}
 				});
@@ -86,6 +87,7 @@
 					url: ajaxurl,
 					data: {
 						'action': 'fw_builder_fullscreen_unset_storage_item',
+						'_nonce': localized.nonce,
 						'post_id': utils.getPostId()
 					}
 				});

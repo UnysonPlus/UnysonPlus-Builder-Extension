@@ -475,6 +475,7 @@ abstract class FW_Option_Type_Builder extends FW_Option_Type {
 						'fullscreen'      => __( 'Full Screen', 'fw' ),
 						'exit_fullscreen' => __( 'Exit Full Screen', 'fw' ),
 					),
+					'nonce' => wp_create_nonce( 'fw_builder_fullscreen_storage' ),
 				)
 			);
 		}

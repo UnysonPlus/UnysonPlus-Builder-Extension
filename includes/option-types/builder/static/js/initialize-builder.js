@@ -76,6 +76,7 @@ window.fwExtBuilderInitialize = (function ($) {
 				{
 					if (!$builder.hasClass('fixed-header')) {
 						$builder.addClass('fixed-header');
+						if ( window._fwDragDebug ) { console.log( '[fwDragDebug] .fixed-header ADDED  pad-top=' + headerHeight + 'px  headerTop=' + headerTopShift + 'px' ); }
 					}
 
 					$builder.css({
@@ -93,6 +94,7 @@ window.fwExtBuilderInitialize = (function ($) {
 			{
 				if ($builder.hasClass('fixed-header')) {
 					$builder.removeClass('fixed-header');
+					if ( window._fwDragDebug ) { console.log( '[fwDragDebug] .fixed-header REMOVED' ); }
 
 					$builder.css({
 						'padding-top': ''
@@ -138,7 +140,42 @@ window.fwExtBuilderInitialize = (function ($) {
 			distance: 10,
 			placeholder: 'fw-builder-placeholder',
 			zIndex: 99999,
+			// Parent the cloned helper to the common ancestor of both the
+			// thumbnails area and the canvas. With the default `appendTo`
+			// the helper sits inside the source thumbnail container, and
+			// crossing into the canvas (or back out over the tabs/thumbnails
+			// area) re-parents it into / out of the connected sortable, which
+			// changes the offset parent and produces a visible "jump". A
+			// common ancestor keeps the offset parent stable for the whole
+			// drag. `.fw-option-type-builder` is the option-type wrapper that
+			// contains both regions and carries the CSS class chain the
+			// helper needs (so styles still match).
+			appendTo: '.fw-option-type-builder',
+			drag: function ( event, ui ) {
+				if ( window.fwDragDebug ) { window.fwDragDebug.tick( 'd.drag', event, ui ); }
+			},
 			start: function(event, ui) {
+				// Pin the helper's offsetParent for the entire drag by
+				// tagging the body with `fw-builder-dragging`. The matching
+				// rule in `builder.css` forces `.fw-option-type-builder` to
+				// `position: relative` AND every `.builder-item` /
+				// `.builder-items` / `.builder-root-items` descendant to
+				// `position: static !important`. The diagnostic overlay
+				// confirmed the drift root cause was the helper's offsetParent
+				// flipping from `.fw-option-type-builder` to a column
+				// `.builder-item.fw-col-xs-12` when jQuery UI's
+				// `connectToSortable` re-parented the cloned helper into a
+				// column's `.builder-items`. Forcing every potential
+				// positioned ancestor inside the wrapper to static means the
+				// offsetParent walk always lands on the wrapper, regardless
+				// of which sortable jQuery UI re-parents into — so the inline
+				// `top` / `left` jQuery UI sets each tick are evaluated
+				// against a consistent coordinate system and the helper stays
+				// glued to the cursor.
+				$( 'body' ).addClass( 'fw-builder-dragging' );
+
+				if ( window.fwDragDebug ) { window.fwDragDebug.bump( 'd.start' ); }
+
 				var movedType = ui.helper.attr('data-builder-item-type');
 
 				if (!movedType) {
@@ -178,6 +215,9 @@ window.fwExtBuilderInitialize = (function ($) {
 				}
 			},
 			stop: function() {
+				// Release the offsetParent pin (see `start`).
+				$( 'body' ).removeClass( 'fw-builder-dragging' );
+
 				// remove "allowed" and "denied" classes from all items
 				{
 					builder.rootItems.view.$el.removeClass(
@@ -190,6 +230,8 @@ window.fwExtBuilderInitialize = (function ($) {
 						);
 					});
 				}
+
+				if ( window.fwDragDebug ) { window.fwDragDebug.bump( 'd.stop' ); }
 			}
 		}, additionalSortableOptions));
 

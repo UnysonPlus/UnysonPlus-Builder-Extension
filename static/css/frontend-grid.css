@@ -81,24 +81,43 @@
 
 
 /* Row (flexbox)
--------------------------------------------------- */
+--------------------------------------------------
+   `.fw-row` is the plugin's standalone Bootstrap-grid clone. We declare
+   `--bs-gutter-x` / `--bs-gutter-y` (Bootstrap's own custom-property names)
+   rather than a private `--fw-` namespace so:
+
+     1. The Theme Settings → Gaps overrides in
+        framework/includes/css-tokens.php — which write `.row, .fw-row {
+        --bs-gutter-x: var(--gap-N); }` — actually reach this rule's
+        downstream `.fw-row > *` padding calc. Without the namespace
+        unification the override was invisible on .fw-row.
+
+     2. `.fw-row` and Bootstrap's `.row` become interchangeable — same
+        variable contract, same gap utilities apply to either.
+
+   `--fw-gutter-x/y` survive as a legacy fallback so any custom CSS that
+   sets `--fw-gutter-x` on a parent element keeps working: it cascades
+   into the var(... , 1.5rem) chain and seeds `--bs-gutter-x` for the
+   row's children. The presets-css override (which writes `--bs-gutter-x`
+   directly) wins via the cascade when it's set. */
+
 .fw-row {
-	--fw-gutter-x: 1.5rem;
-	--fw-gutter-y: 0;
+	--bs-gutter-x: var(--fw-gutter-x, 1.5rem);
+	--bs-gutter-y: var(--fw-gutter-y, 0);
 	display: flex;
 	flex-wrap: wrap;
-	margin-top: calc(-1 * var(--fw-gutter-y));
-	margin-right: calc(-.5 * var(--fw-gutter-x));
-	margin-left: calc(-.5 * var(--fw-gutter-x));
+	margin-top: calc(-1 * var(--bs-gutter-y));
+	margin-right: calc(-.5 * var(--bs-gutter-x));
+	margin-left: calc(-.5 * var(--bs-gutter-x));
 }
 
 .fw-row > * {
 	flex-shrink: 0;
 	width: 100%;
 	max-width: 100%;
-	padding-right: calc(var(--fw-gutter-x) * .5);
-	padding-left: calc(var(--fw-gutter-x) * .5);
-	margin-top: var(--fw-gutter-y);
+	padding-right: calc(var(--bs-gutter-x) * .5);
+	padding-left: calc(var(--bs-gutter-x) * .5);
+	margin-top: var(--bs-gutter-y);
 }
 
 
@@ -135,13 +154,23 @@
 .fw-offset-11 { margin-left: 91.66666667%; }
 
 .fw-order-first { order: -1; }
-.fw-order-last  { order:  6; }
+.fw-order-last  { order: 13; } /* after the max explicit order (12) so "Last" is truly last */
 .fw-order-0 { order: 0; }
 .fw-order-1 { order: 1; }
 .fw-order-2 { order: 2; }
 .fw-order-3 { order: 3; }
 .fw-order-4 { order: 4; }
 .fw-order-5 { order: 5; }
+/* Extended base-tier order utilities so the column's Mobile Order supports up to
+   12 (a row can hold twelve 1/12 columns). Mobile Order applies at the base tier
+   (xs) and resets via .fw-order-sm-0 from sm up, so only the base tier needs these. */
+.fw-order-6  { order:  6; }
+.fw-order-7  { order:  7; }
+.fw-order-8  { order:  8; }
+.fw-order-9  { order:  9; }
+.fw-order-10 { order: 10; }
+.fw-order-11 { order: 11; }
+.fw-order-12 { order: 12; }
 
 
 /* sm (≥ 576px)

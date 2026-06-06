@@ -41,6 +41,8 @@ final class FW_Ext_Builder_Templates
 	 */
 	public static function _action_ajax_render()
 	{
+		check_ajax_referer( 'fw_builder_templates', '_nonce' );
+
 		if (!current_user_can('edit_posts')) {
 			wp_send_json_error();
 		}
@@ -124,6 +126,7 @@ final class FW_Ext_Builder_Templates
 				'l10n' => array(
 					'templates' => __('Templates', 'fw'),
 				),
+				'nonce' => wp_create_nonce( 'fw_builder_templates' ),
 			)
 		);
 

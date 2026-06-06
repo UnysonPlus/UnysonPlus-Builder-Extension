@@ -2,3 +2,15 @@
 	text-decoration: none !important;
 	font-style: normal;
 }
+
+.import-template.button.button-secondary {
+    margin: .5rem 0;
+    text-decoration: none;
+    font-style: normal;
+    background: #334b63;
+}
+
+.import-template.button.button-secondary:hover, .import-template.button.button-secondary:focus  {
+    background: #2b3f53;
+    color: #73bae9;
+}
