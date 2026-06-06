@@ -27,6 +27,8 @@ final class _FW_Ext_Builder_Fullscreen
 
 	public static function _action_ajax_set_storage_item()
 	{
+		check_ajax_referer( 'fw_builder_fullscreen_storage', '_nonce' );
+
 		if (!current_user_can('edit_posts')) {
 			wp_send_json_error();
 		}
@@ -45,6 +47,8 @@ final class _FW_Ext_Builder_Fullscreen
 
 	public static function _action_ajax_unset_storage_item()
 	{
+		check_ajax_referer( 'fw_builder_fullscreen_storage', '_nonce' );
+
 		if (!current_user_can('edit_posts')) {
 			wp_send_json_error();
 		}

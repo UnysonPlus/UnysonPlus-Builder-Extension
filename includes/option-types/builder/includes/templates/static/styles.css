@@ -144,3 +144,29 @@ body.rtl .fw-option-type-builder .template-container {
 .fw-builder-templates-types > .fw-builder-templates-type ul.std li:hover a.template-delete {
 	visibility: visible;
 }
+
+/* Per-row Export icon — same float-right + show-on-hover behavior as
+ * .template-delete, sits to its left because both are floated. */
+.fw-builder-templates-types > .fw-builder-templates-type ul.std li a.template-export {
+	float: right;
+	visibility: hidden;
+	margin-top: 3px;
+	margin-right: 4px;
+	text-decoration: none !important;
+	color: #888;
+}
+
+.fw-builder-templates-types > .fw-builder-templates-type ul.std li:hover a.template-export {
+	visibility: visible;
+}
+
+.fw-builder-templates-types > .fw-builder-templates-type ul.std li a.template-export:hover {
+	color: #0073aa;
+}
+
+/* Hidden file input for the Import button (the visible <a class="import-template">
+ * delegates to it). `.fw-hidden` should already hide it, but force it for
+ * browsers / themes that override visibility on form controls. */
+.fw-builder-templates-types > .fw-builder-templates-type .save-template-wrapper input.template-import-file {
+	display: none !important;
+}

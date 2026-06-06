@@ -1,4 +1,166 @@
 jQuery( document ).ready( function ( $ ) {
+	/**
+	 * Diagnostic overlay for the page-builder drag helper. OFF by default —
+	 * toggle `window._fwDragDebug = true` in the browser console to enable,
+	 * `false` to remove. Optionally call `window.fwDragDebug.reset()` between
+	 * drags to zero out the counters.
+	 *
+	 * Displays in real-time during a drag:
+	 *   - per-source event counters (d = draggable, s = sortable)
+	 *   - cursor / helper coordinates and the delta (should stay 0;0)
+	 *   - helper's parent + offsetParent identity (jumps when these change)
+	 *   - .fixed-header state on .fw-option-type-builder + its inline padding-top
+	 *   - inline top/left styles vs offset() so you can see when jQuery UI
+	 *     resets one without the other
+	 *   - an "events" tail listing the last few class / parent / offsetparent
+	 *     transitions with the tick they fired on
+	 *
+	 * The overlay's border / text turns amber when the delta is non-zero, so
+	 * the exact tick the drift appears is immediately visible.
+	 */
+	window.fwDragDebug = ( function () {
+		var overlay = null;
+		var counters = {};
+		var lastSource = '';
+		var events = []; // tail of recent transitions
+		var lastSnap = null;
+		function ensure() {
+			if ( ! window._fwDragDebug ) {
+				if ( overlay ) { overlay.parentNode && overlay.parentNode.removeChild( overlay ); overlay = null; }
+				return null;
+			}
+			if ( ! overlay ) {
+				overlay = document.createElement( 'div' );
+				overlay.id = 'fw-drag-debug-overlay';
+				overlay.style.cssText = 'position:fixed;top:10px;right:10px;background:rgba(0,0,0,0.92);color:#0f0;font:11px/1.45 monospace;padding:10px 14px;border-radius:6px;z-index:999999;white-space:pre;pointer-events:none;border:1px solid #0a0;min-width:380px;max-height:90vh;overflow:hidden;';
+				document.body.appendChild( overlay );
+			}
+			return overlay;
+		}
+		function p ( s, n ) { s = String( s ); while ( s.length < n ) { s = ' ' + s; } return s; }
+		function nodeId ( el ) {
+			if ( ! el || ! el.tagName ) { return '<none>'; }
+			var c = ( el.className || '' ).toString().split( /\s+/ ).filter( Boolean ).slice( 0, 3 ).join( '.' );
+			return el.tagName + ( c ? '.' + c : '' );
+		}
+		function classList ( el ) {
+			if ( ! el || ! el.className ) { return ''; }
+			return el.className.toString().split( /\s+/ ).filter( Boolean ).join( ' ' );
+		}
+		function pushEvent ( label ) {
+			var tick = ( counters['d.drag'] || 0 ) + ( counters['s.sort'] || 0 );
+			events.push( '[' + tick + '] ' + label );
+			if ( events.length > 8 ) { events.shift(); }
+		}
+		function diffSnap ( cur ) {
+			if ( ! lastSnap ) { lastSnap = cur; return; }
+			if ( cur.fixedHeader !== lastSnap.fixedHeader ) {
+				pushEvent( '.fixed-header ' + ( cur.fixedHeader ? 'ADDED' : 'REMOVED' ) );
+			}
+			if ( cur.paddingTop !== lastSnap.paddingTop ) {
+				pushEvent( 'wrapper padding-top: ' + lastSnap.paddingTop + ' -> ' + cur.paddingTop );
+			}
+			if ( cur.parent !== lastSnap.parent ) {
+				pushEvent( 'helper PARENT: ' + lastSnap.parent + ' -> ' + cur.parent );
+			}
+			if ( cur.offPar !== lastSnap.offPar ) {
+				pushEvent( 'helper OFFSETPARENT: ' + lastSnap.offPar + ' -> ' + cur.offPar );
+			}
+			lastSnap = cur;
+		}
+		function render ( evtData ) {
+			var o = ensure(); if ( ! o ) { return; }
+			var txt =
+				'd.start: ' + ( counters['d.start'] || 0 ) +
+				'   d.drag: ' + ( counters['d.drag'] || 0 ) +
+				'   d.stop: ' + ( counters['d.stop'] || 0 ) + '\n' +
+				's.start: ' + ( counters['s.start'] || 0 ) +
+				'   s.sort: ' + ( counters['s.sort'] || 0 ) +
+				'   s.stop: ' + ( counters['s.stop'] || 0 ) + '\n' +
+				'──────────────────────────────────────\n' +
+				'last:    ' + lastSource + '\n';
+			if ( evtData ) {
+				var drifting = ( Math.abs( evtData.dx ) > 0.5 || Math.abs( evtData.dy ) > 0.5 );
+				o.style.borderColor = drifting ? '#fa0' : '#0a0';
+				o.style.color = drifting ? '#fa0' : '#0f0';
+				txt +=
+					'cursor:    (' + p( evtData.pageX, 5 ) + ', ' + p( evtData.pageY, 5 ) + ')\n' +
+					'h.offset:  (' + p( Math.round( evtData.h.left ), 5 ) + ', ' + p( Math.round( evtData.h.top ), 5 ) + ')\n' +
+					'h.css T/L: (' + p( evtData.cssLeft, 5 ) + ', ' + p( evtData.cssTop, 5 ) + ')\n' +
+					'anchor:    (' + p( evtData.a.left, 5 ) + ', ' + p( evtData.a.top, 5 ) + ')\n' +
+					'delta:     (' + p( evtData.dx.toFixed( 1 ), 5 ) + ', ' + p( evtData.dy.toFixed( 1 ), 5 ) + ')\n' +
+					'──────────────────────────────────────\n' +
+					'parent:    ' + evtData.parent + '\n' +
+					'offPar:    ' + evtData.offPar + '\n' +
+					'fixed-hdr: ' + ( evtData.fixedHeader ? 'ON' : 'off' ) +
+						'    wrapper pad-top: ' + evtData.paddingTop + '\n' +
+					'wrapper cls: ' + evtData.wrapperClasses + '\n';
+				if ( events.length ) {
+					txt += '──────────────────────────────────────\n' + events.join( '\n' );
+				}
+			}
+			o.textContent = txt;
+		}
+		function snapshot ( ui ) {
+			var $w = jQuery( '.fw-option-type-builder' ).first();
+			var wEl = $w[0] || null;
+			var hEl = ui && ui.helper && ui.helper[0];
+			return {
+				wrapperClasses: classList( wEl ),
+				fixedHeader: $w.hasClass( 'fixed-header' ),
+				paddingTop: ( wEl && wEl.style && wEl.style.paddingTop ) || '<empty>',
+				parent: nodeId( hEl && hEl.parentNode ),
+				offPar: nodeId( hEl && hEl.offsetParent )
+			};
+		}
+		return {
+			bump: function ( name ) {
+				if ( ! window._fwDragDebug ) { return; }
+				counters[ name ] = ( counters[ name ] || 0 ) + 1;
+				lastSource = name;
+				if ( name === 'd.start' || name === 's.start' ) {
+					events = [];
+					lastSnap = null;
+					pushEvent( name + ' fired' );
+				} else if ( name === 'd.stop' || name === 's.stop' ) {
+					pushEvent( name + ' fired' );
+				}
+				render( null );
+			},
+			tick: function ( name, event, ui ) {
+				if ( ! window._fwDragDebug || ! ui || ! ui.helper ) { return; }
+				counters[ name ] = ( counters[ name ] || 0 ) + 1;
+				lastSource = name;
+				var anchor = ui.helper.data( '_fwHelperAnchor' ) || { left: 0, top: 0 };
+				var h = ui.helper.offset();
+				var snap = snapshot( ui );
+				diffSnap( snap );
+				render( {
+					pageX: event.pageX,
+					pageY: event.pageY,
+					h: h,
+					cssLeft: ui.helper[0].style.left || '<empty>',
+					cssTop: ui.helper[0].style.top || '<empty>',
+					a: anchor,
+					dx: event.pageX - anchor.left - h.left,
+					dy: event.pageY - anchor.top - h.top,
+					parent: snap.parent,
+					offPar: snap.offPar,
+					fixedHeader: snap.fixedHeader,
+					paddingTop: snap.paddingTop,
+					wrapperClasses: snap.wrapperClasses
+				} );
+			},
+			reset: function () {
+				counters = {};
+				lastSource = '';
+				events = [];
+				lastSnap = null;
+				render( null );
+			}
+		};
+	} )();
+
 	/** Some functions */
 	{
 		/**
@@ -501,6 +663,24 @@ jQuery( document ).ready( function ( $ ) {
 										}
 									}
 
+									if ( window.fwDragDebug ) { window.fwDragDebug.bump( 's.start' ); }
+
+									// Defensive FLIP-transform reset. flipPlay() relies on a
+									// `transitionend` listener to clear inline `transform` /
+									// `transition` styles, but if a prior animation was
+									// interrupted (e.g. user starts a new drag before the
+									// previous FLIP finished, or transitionend never fires
+									// because the element was detached mid-animation), stale
+									// transforms can persist. Sweep them all clean at drag
+									// start so the new drag's `getBoundingClientRect()` reads
+									// match the actual layout, not a transformed visual offset.
+									builder.$input.closest( '.fw-option-type-builder' )
+									       .find( '.builder-item' )
+									       .each( function () {
+									           this.style.transform  = '';
+									           this.style.transition = '';
+									       } );
+
 									// check if it is an exiting item (and create variables)
 									{
 										// extract cid from view id
@@ -530,6 +710,10 @@ jQuery( document ).ready( function ( $ ) {
 										     && movedItem.attributes.type != 'section' ) {
 											ui.item.parents( '.builder-root-items' ).addClass( 'fw-move-simple-item' );
 										}
+
+										// Stash dragged item type so _rearrange can enforce strict
+										// hierarchy (simple→column, column→row, row→section, section→root).
+										ui.item.data( 'fw-source-item-type', movedItem.get( 'type' ) );
 									}
 
 									var movedItemType = movedItem.get( 'type' );
@@ -582,7 +766,12 @@ jQuery( document ).ready( function ( $ ) {
 									             .css( 'min-height', $c.height() + 'px' );
 									       } );
 								},
+								sort: function ( event, ui ) {
+									if ( window.fwDragDebug ) { window.fwDragDebug.tick( 's.sort', event, ui ); }
+								},
 								stop: function ( event, ui ) {
+									if ( window.fwDragDebug ) { window.fwDragDebug.bump( 's.stop' ); }
+
 									if ( rearrangeRAF ) {
 										cancelAnimationFrame( rearrangeRAF );
 										rearrangeRAF = null;
@@ -813,6 +1002,69 @@ jQuery( document ).ready( function ( $ ) {
 									: null;
 								var targetParent = a ? a[0] : ( i && i.item ? i.item[0].parentNode : null );
 								var isCrossContainer = !! ( currentParent && targetParent && currentParent !== targetParent );
+
+								// Strict hierarchy: each item type must commit only into its proper
+								// container. Blocks placeholder commits at the wrong level so a
+								// simple shortcode dragged from anywhere won't push sections around
+								// while the cursor is hovering over root / a section interior — it
+								// only commits once the cursor enters a column's .builder-items.
+								//
+								// SCOPED TO `simple` ONLY. In the editor a simple shortcode must
+								// live inside a column. Other types are intentionally NOT guarded:
+								// rows don't exist in the editor tree (the items-corrector
+								// synthesizes them only at save time), so a column's editor parent
+								// is a SECTION — guarding `column → row` blocked every column drop.
+								// Columns / sections / section-like items drag with the framework's
+								// original freedom; their invalid drops are still rejected at
+								// `receive` via allowIncomingType / allowDestinationType.
+								//
+								// Type sources:
+								//   * existing item reorder → `fw-source-item-type` stashed in start
+								//   * thumbnail draggable (new item) → `data-builder-item-type` on
+								//     the thumbnail itself, same attribute the receive handler reads
+								// Reading the data attribute as a fallback makes the simple→column
+								// rule apply to thumbnail drops too, so dragging a Text Block from
+								// the Content Elements panel no longer shuffles columns inside
+								// sections the cursor passes through on its way to the target column.
+								{
+									var draggedType = this.currentItem
+										? this.currentItem.data( 'fw-source-item-type' )
+										: null;
+
+									if ( ! draggedType && this.currentItem ) {
+										draggedType = this.currentItem.attr( 'data-builder-item-type' ) || null;
+									}
+
+									if ( draggedType === 'simple' ) {
+										var targetParentType = null;
+										var $targetParentItem = $( targetParent ).parents( '.builder-item' ).first();
+										if ( $targetParentItem.length ) {
+											var targetParentCid = ( $targetParentItem.attr( 'id' ) || '' ).split( '-' ).pop();
+											var targetParentModel = targetParentCid
+												? builder.findItemRecursive( { cid: targetParentCid } )
+												: null;
+											if ( targetParentModel ) {
+												targetParentType = targetParentModel.get( 'type' );
+											}
+										}
+
+										if ( targetParentType !== 'column' ) {
+											if ( rearrangeContainerTimeout ) {
+												clearTimeout( rearrangeContainerTimeout );
+												rearrangeContainerTimeout = null;
+											}
+											pendingCrossTarget = null;
+											// Keep jQuery UI's cached item rects in sync with
+											// the DOM the cursor is actually hovering over.
+											// We're early-returning instead of running the
+											// normal doRearrange (which would call this), so
+											// call it here to avoid stale-position drift in
+											// subsequent _intersectsWithPointer checks.
+											this.refreshPositions( true );
+											return;
+										}
+									}
+								}
 
 								var ctx = {
 									instance: this,

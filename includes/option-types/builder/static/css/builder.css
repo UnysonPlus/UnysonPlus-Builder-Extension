@@ -13,6 +13,53 @@
 	width: 100%;
 	z-index: 1;
 }
+
+/* Drag-helper offsetParent pin (paired with `body.fw-builder-dragging` toggle
+ * in `initialize-builder.js` draggable start/stop). During a thumbnail drag,
+ * jQuery UI's `connectToSortable` moves the cloned helper into whichever
+ * column's `.builder-items` sortable the cursor enters. Bootstrap-3 columns
+ * carry `position: relative`, so the helper's offsetParent flips to the
+ * column the moment the move happens — and the inline `top` / `left` jQuery
+ * UI sets each tick (computed against the OLD offsetParent's coords) gets
+ * rendered against the NEW one, producing the visible drift the diagnostic
+ * overlay caught. Pinning the wrapper to relative AND forcing every
+ * candidate ancestor inside it to static for the drag window means the
+ * offsetParent walk always lands on the wrapper, regardless of which
+ * sortable the helper is currently inside — so the inline `top` / `left`
+ * are evaluated against a single consistent coordinate system. Only active
+ * during drag; everything reverts on `stop`.
+ */
+body.fw-builder-dragging .fw-option-type-builder {
+	position: relative;
+}
+body.fw-builder-dragging .fw-option-type-builder .builder-root-items,
+body.fw-builder-dragging .fw-option-type-builder .builder-items,
+body.fw-builder-dragging .fw-option-type-builder .builder-item,
+body.fw-builder-dragging .fw-option-type-builder .builder-item > div,
+body.fw-builder-dragging .fw-option-type-builder .pb-item {
+	/* `.builder-item > div` + `.pb-item` neutralize the inner template
+	 * wrapper (`.pb-item-type-column.pb-item` / `.pb-item-type-section.pb-item` /
+	 * etc.) so the deny-state rule a few hundred lines below —
+	 * `.builder-item.fw-builder-item-deny-incoming-type > div { position: relative }`
+	 * — can't introduce a positioned offsetParent mid-drag. That rule fires
+	 * whenever an item refuses the dragged type (e.g. a column refuses
+	 * another column being dragged, every simple item refuses a column),
+	 * and without these two extra selectors the helper's offsetParent flips
+	 * to the deny-state inner div on column / section drags.
+	 */
+	position: static !important;
+}
+body.fw-builder-dragging .fw-option-type-builder .builder-item.fw-builder-item-deny-incoming-type > div > .builder-items:before {
+	/* Hide the diagonal-slash "you can't drop here" overlay during drag.
+	 * Its `:before` is `position: absolute` against the inner template div,
+	 * which we just forced to static (above) — so without this override the
+	 * overlay resolves against `.fw-option-type-builder` and stretches over
+	 * the entire builder during column / section drags. Denial is still
+	 * enforced functionally at the sortable `receive` callback (which
+	 * cancels the drop); we're only suppressing the visual hint.
+	 */
+	display: none !important;
+}
 .fw-option-type-builder.fixed-header.has-header-tools > .builder-items-types {
 	margin-bottom: 0;
 	border-bottom: 1px solid #eeeeee;
@@ -25,6 +72,32 @@
 
 .fw-option-type-builder > .builder-items-types > .fw-builder-header-tools {
 	padding: 20px;
+	/* Modernized: flex row instead of floated children. Tools align to the right,
+	   evenly spaced via gap; per-tool `order` (e.g. the device toggle) controls
+	   placement regardless of DOM insertion order. */
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+/* Neutralize the legacy float utilities + clearfix on the now-flex header tools. */
+.fw-option-type-builder > .builder-items-types > .fw-builder-header-tools > * {
+	float: none;
+	margin: 0;
+}
+
+/* Keep the Undo/Redo history container on the LEFT (it was originally float:left);
+   margin-right:auto absorbs the free space so the remaining tools stay right-aligned. */
+.fw-option-type-builder > .builder-items-types > .fw-builder-header-tools > .history-container {
+	order: -1;
+	margin-right: auto;
+}
+.fw-option-type-builder > .builder-items-types > .fw-builder-header-tools::before,
+.fw-option-type-builder > .builder-items-types > .fw-builder-header-tools::after {
+	content: none;
+	display: none;
 }
 
 .fw-option-type-builder > .builder-items-types > .fw-builder-header-tools .fw-builder-header-post-save-button {

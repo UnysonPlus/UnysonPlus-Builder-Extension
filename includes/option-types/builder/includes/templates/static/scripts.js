@@ -37,6 +37,7 @@
 					url: ajaxurl,
 					data: {
 						'action': 'fw_builder_templates_render',
+						'_nonce': (typeof _fw_option_type_builder_templates !== 'undefined' ? _fw_option_type_builder_templates.nonce : ''),
 						'builder_type': this.builder.get('type')
 					}
 				})
