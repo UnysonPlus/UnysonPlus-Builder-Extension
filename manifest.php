@@ -5,11 +5,11 @@ $manifest = array();
 $manifest['name']        = __( 'Builder', 'fw' );
 $manifest['description'] = __( 'Unyson Page Builder Extension', 'fw' );
 
-$manifest['version']     = '1.2.48';
+$manifest['version']     = '1.2.49';
 
 // Repository Info
-$manifest['github_update'] = 'ThemeFuse/Unyson-Builder-Extension';
-$manifest['github_repo']   = 'https://github.com/ThemeFuse/Unyson-Builder-Extension';
+$manifest['github_update'] = 'UnysonPlus/UnysonPlus-Builder-Extension';
+$manifest['github_repo']   = 'https://github.com/UnysonPlus/UnysonPlus-Builder-Extension';
 $manifest['github_branch'] = 'master';
 
 // Author Info
