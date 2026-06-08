@@ -5,7 +5,7 @@ $manifest = array();
 $manifest['name']        = __( 'Builder', 'fw' );
 $manifest['description'] = __( 'Unyson Page Builder Extension', 'fw' );
 
-$manifest['version']     = '1.2.49';
+$manifest['version']     = '1.2.50';
 
 // Repository Info
 $manifest['github_update'] = 'UnysonPlus/UnysonPlus-Builder-Extension';
@@ -28,6 +28,20 @@ $manifest['uri'] = 'http://manual.unyson.io/en/latest/extension/builder/index.ht
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.2.50 - Smart click-to-add placement. Clicking an element icon used to drop
+ *          every type into the root collection (base allowDestinationType(null)
+ *          is true for all types), stranding bare columns and content shortcodes
+ *          at root where they could not then be dragged into a section. Clicking
+ *          now resolves a valid destination and auto-builds the missing container
+ *          scaffold: sections/section-like still append to root; a column drops
+ *          into the last section (a standard section is created when none exists);
+ *          a content/media element drops into the last column on the page (a
+ *          section -> 1/1 column scaffold is created when the page has no column
+ *          yet). The new element is scrolled into view after insertion. Logic
+ *          lives in the thumbnail-click handler in initialize-builder.js and
+ *          reuses the existing forEachItemRecursive walk and the section-like
+ *          registry (window.fwSectionLikeTypes). Drag-and-drop is unchanged.
+ *
  * 1.2.44 - Full-template export envelope bumped to format_version 2. Per-element
  *          Custom CSS (shortcodes 1.4.87) now lives inside the builder `json`, so an
  *          exported full-page template carries its styling with it — the version
