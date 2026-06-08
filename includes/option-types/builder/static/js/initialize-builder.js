@@ -236,6 +236,132 @@ window.fwExtBuilderInitialize = (function ($) {
 		}, additionalSortableOptions));
 
 		/**
+		 * Smart placement helpers for click-to-add.
+		 *
+		 * Clicking an element icon used to dump EVERY type straight into
+		 * the root collection (base allowDestinationType(null) === true for
+		 * all types), which produced an invalid tree — bare columns and
+		 * content shortcodes stranded at root, where they then could not be
+		 * dragged into a section (a jQuery UI sortable empty-sibling-container
+		 * limitation, not a rule). Instead, a click now resolves a VALID
+		 * destination, auto-creating the missing container scaffold:
+		 *
+		 *   - section / section-like  → appended to the root (unchanged)
+		 *   - column                  → into the LAST section (a standard
+		 *                               section is created if none exists)
+		 *   - content / media (simple)→ into the LAST column on the page
+		 *                               (a section → 1/1 column scaffold is
+		 *                               created if the page has no column yet)
+		 */
+		function isSectionLikeType(type) {
+			if (type === 'section') {
+				return true;
+			}
+
+			return !!(
+				window.fwSectionLikeTypes
+				&&
+				typeof window.fwSectionLikeTypes.isSectionLike === 'function'
+				&&
+				window.fwSectionLikeTypes.isSectionLike(type)
+			);
+		}
+
+		// Last root-level section (or section-like) container, document order.
+		function findLastSectionContainer() {
+			var last = null;
+
+			builder.rootItems.each(function(item){
+				if (isSectionLikeType(item.get('type'))) {
+					last = item;
+				}
+			});
+
+			return last;
+		}
+
+		// Last column anywhere in the tree, document order.
+		function findLastColumn() {
+			var last = null;
+
+			forEachItemRecursive(builder.rootItems, function(item){
+				if (item.get('type') === 'column') {
+					last = item;
+				}
+			});
+
+			return last;
+		}
+
+		function createItemOfType(type, attrs) {
+			var Cls = builder.getRegisteredItemClassByType(type);
+
+			return Cls ? new Cls(attrs || {}) : null;
+		}
+
+		// Ensure a section exists at root; return it (the last one), creating
+		// a standard section when the page has none.
+		function ensureSection() {
+			var section = findLastSectionContainer();
+
+			if (!section) {
+				section = createItemOfType('section');
+
+				if (section) {
+					builder.rootItems.add(section);
+				}
+			}
+
+			return section;
+		}
+
+		// Ensure a column exists to receive content; return the last one,
+		// creating a section → 1/1 column scaffold when the page has none.
+		function ensureColumn() {
+			var column = findLastColumn();
+
+			if (!column) {
+				var section = ensureSection();
+
+				if (!section) {
+					return null;
+				}
+
+				column = createItemOfType('column', {width: '1_1'});
+
+				if (column) {
+					section.get('_items').add(column);
+				}
+			}
+
+			return column;
+		}
+
+		// Pulse the clicked thumbnail (original add animation), then scroll
+		// the freshly inserted element into view. Nested adds don't fire the
+		// rootItems 'add' handler that normally scrolls, so do it here.
+		function afterClickAdd($thumb, scrollToItem) {
+			clearTimeout($thumb.attr('data-animation-timeout-id'));
+			$thumb.removeClass('fw-builder-animation-item-type-add');
+			$thumb.addClass('fw-builder-animation-item-type-add');
+			$thumb.attr('data-animation-timeout-id',
+				setTimeout(function(){
+					$thumb.removeClass('fw-builder-animation-item-type-add');
+				}, 500)
+			);
+
+			if (scrollToItem && scrollToItem.view) {
+				setTimeout(function(){
+					var el = scrollToItem.view.$el.get(0);
+
+					if (el && el.scrollIntoView) {
+						el.scrollIntoView({block: 'center'});
+					}
+				}, 50);
+			}
+		}
+
+		/**
 		 * Add item on thumbnail click
 		 */
 		$this.find('.builder-items-types').on('click', '.builder-item-type', function(){
@@ -243,42 +369,51 @@ window.fwExtBuilderInitialize = (function ($) {
 
 			var itemType = $itemType.attr('data-builder-item-type');
 
-			if (itemType) {
-				var ItemTypeClass = builder.getRegisteredItemClassByType(itemType);
-
-				if (ItemTypeClass) {
-					if (ItemTypeClass.prototype.allowDestinationType(null)) {
-						builder.rootItems.add(
-							new ItemTypeClass({}, {
-								$thumb: $itemType
-							})
-						);
-
-						// animation
-						{
-							// stop previous animation
-							{
-								clearTimeout($itemType.attr('data-animation-timeout-id'));
-								$itemType.removeClass('fw-builder-animation-item-type-add');
-							}
-
-							$itemType.addClass('fw-builder-animation-item-type-add');
-
-							$itemType.attr('data-animation-timeout-id',
-								setTimeout(function(){
-									$itemType.removeClass('fw-builder-animation-item-type-add');
-								}, 500)
-							);
-						}
-					} else {
-						console.warn('Item type "'+ itemType +'" is not allowed as first level item');
-					}
-				} else {
-					console.error('Unregistered item type: '+ itemType);
-				}
-			} else {
+			if (!itemType) {
 				console.error('Cannot extract item type from element', $itemType);
+				return;
 			}
+
+			var ItemTypeClass = builder.getRegisteredItemClassByType(itemType);
+
+			if (!ItemTypeClass) {
+				console.error('Unregistered item type: '+ itemType);
+				return;
+			}
+
+			var newItem = new ItemTypeClass({}, {$thumb: $itemType});
+			var nested = false;
+
+			if (isSectionLikeType(itemType)) {
+				// Top-level container: append to the root (unchanged).
+				builder.rootItems.add(newItem);
+			} else if (itemType === 'column') {
+				// Columns must live in a section: drop into the last one,
+				// creating a standard section first when the page has none.
+				var section = ensureSection();
+
+				if (!section) {
+					console.warn('Could not create a section to hold the column');
+					return;
+				}
+
+				section.get('_items').add(newItem);
+				nested = true;
+			} else {
+				// Content / media: drop into the last column, auto-creating the
+				// section → 1/1 column scaffold when the page has no column yet.
+				var column = ensureColumn();
+
+				if (!column) {
+					console.warn('Could not create a column to hold "'+ itemType +'"');
+					return;
+				}
+
+				column.get('_items').add(newItem);
+				nested = true;
+			}
+
+			afterClickAdd($itemType, nested ? newItem : null);
 		});
 
 		// scroll to the added element
