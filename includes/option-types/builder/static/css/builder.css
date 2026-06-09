@@ -191,16 +191,15 @@ body.fw-builder-dragging .fw-option-type-builder .builder-item.fw-builder-item-d
 	font-size: 11px;
 	background-color: #ffffff;
 	float: left;
-	display: table;
+	/* Modernized: display:table + child table-cell -> flexbox vertical centering. */
+	display: flex;
+	align-items: center;
 	position: relative;
 	outline: 1px solid #e1e1e1;
 	margin: 0 1px 1px 0;
 
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 
-	-webkit-transition: outline-color .1s ease-in;
 	transition: outline-color .1s ease-in;
 }
 
@@ -219,8 +218,7 @@ body.rtl .fw-option-type-builder .builder-item-type {
 }
 
 .fw-option-type-builder .builder-item-type .item-type-icon-title {
-	display: table-cell;
-	vertical-align: middle;
+	flex: 1 1 auto; /* fill the 70px tile width (replaces table-cell); parent flex centers it vertically */
 }
 
 .fw-option-type-builder .builder-item-type .item-type-icon-title .item-type-icon {
