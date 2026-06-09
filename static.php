@@ -3,7 +3,7 @@
 if (!is_admin()) {
 	wp_register_style(
 		'fw-ext-builder-frontend-grid',
-		fw_ext('builder')->get_uri('/static/css/frontend-grid.css'),
+		fw_min_uri(fw_ext('builder')->get_uri('/static/css/frontend-grid.css')),
 		array(),
 		fw_ext('builder')->manifest->get_version()
 	);
@@ -15,7 +15,7 @@ if (!is_admin()) {
 	// whether to enqueue this handle (see class-fw-extension-page-builder.php).
 	wp_register_style(
 		'fw-ext-builder-bootstrap-3-legacy',
-		fw_ext('builder')->get_uri('/static/css/bootstrap-3-legacy.css'),
+		fw_min_uri(fw_ext('builder')->get_uri('/static/css/bootstrap-3-legacy.css')),
 		array(),
 		fw_ext('builder')->manifest->get_version()
 	);
