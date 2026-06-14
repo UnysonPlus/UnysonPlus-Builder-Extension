@@ -851,6 +851,12 @@ jQuery( document ).ready( function ( $ ) {
 													}
 												);
 											} else {
+												if ( window.fwNestedColDebug !== false ) {
+													console.debug( '[nested-col][backend] receive(new) type="' + incomingItemType +
+														'" into parent="' + ( currentItemType || 'root' ) + '" -> REJECT' +
+														' (allowDestination=' + IncomingItemClass.prototype.allowDestinationType( currentItemType ) +
+														' allowIncoming=' + ( ! currentItemType || currentItem.allowIncomingType( incomingItemType ) ) + ')' );
+												}
 												// replace all html, so dragged element will be removed
 												this.render();
 											}
@@ -891,6 +897,11 @@ jQuery( document ).ready( function ( $ ) {
 										) {
 											// move item from one collection to another
 											{
+												if ( window.fwNestedColDebug !== false ) {
+													console.debug( '[nested-col][backend] receive(move) type="' + incomingItemType +
+														'" into parent="' + ( currentItemType || 'root' ) + '" -> ACCEPT' );
+												}
+
 												var at = ui.item.index();
 
 												// prevent 'remove', that will remove all events from the element
@@ -903,6 +914,12 @@ jQuery( document ).ready( function ( $ ) {
 												} );
 											}
 										} else {
+											if ( window.fwNestedColDebug !== false ) {
+												console.debug( '[nested-col][backend] receive(move) type="' + incomingItemType +
+													'" into parent="' + ( currentItemType || 'root' ) + '" -> REJECT' +
+													' (allowDestination=' + IncomingItemClass.prototype.allowDestinationType( currentItemType ) +
+													' allowIncoming=' + ( ! currentItemType || currentItem.allowIncomingType( incomingItemType ) ) + ')' );
+											}
 											console.warn( '[Builder] Item move denied' );
 											ui.sender.sortable( 'cancel' );
 										}
