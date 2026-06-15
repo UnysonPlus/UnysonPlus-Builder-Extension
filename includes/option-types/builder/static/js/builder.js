@@ -1053,8 +1053,26 @@ jQuery( document ).ready( function ( $ ) {
 									}
 
 									if ( draggedType === 'simple' ) {
+										// Resolve the prospective parent CONTAINER. jQuery UI's
+										// `targetParent` (from `a` / `i.item`) can be null when the
+										// dragged helper is TALL (a content-bearing leaf) and its
+										// pointer-intersection doesn't resolve an `i.item` over a
+										// small nested column — which previously made this guard
+										// think the target wasn't a column and BLOCK the commit, so
+										// "an element with content won't drop into a nested column"
+										// while an empty/new one (short helper) did. Fall back to the
+										// placeholder's actual container (and the sortable's current
+										// container) so a valid drop isn't refused on geometry alone.
+										var resolvedTargetParent = targetParent;
+										if ( ! resolvedTargetParent && this.placeholder && this.placeholder[0] ) {
+											resolvedTargetParent = this.placeholder[0].parentNode;
+										}
+										if ( ! resolvedTargetParent && this.currentContainer && this.currentContainer.element ) {
+											resolvedTargetParent = this.currentContainer.element[0];
+										}
+
 										var targetParentType = null;
-										var $targetParentItem = $( targetParent ).parents( '.builder-item' ).first();
+										var $targetParentItem = $( resolvedTargetParent ).closest( '.builder-item' );
 										if ( $targetParentItem.length ) {
 											var targetParentCid = ( $targetParentItem.attr( 'id' ) || '' ).split( '-' ).pop();
 											var targetParentModel = targetParentCid
@@ -1062,6 +1080,23 @@ jQuery( document ).ready( function ( $ ) {
 												: null;
 											if ( targetParentModel ) {
 												targetParentType = targetParentModel.get( 'type' );
+											}
+										}
+
+										if ( window.fwNestedColDebug !== false ) {
+											// Dedupe: this runs on every mousemove — only log when the
+											// resolved decision actually changes, so the console isn't flooded.
+											var src = targetParent ? 'arg' : ( resolvedTargetParent ?
+												( this.placeholder && this.placeholder[0] && resolvedTargetParent === this.placeholder[0].parentNode ? 'fallback(placeholder)' : 'fallback(currentContainer)' )
+												: 'NONE' );
+											var logKey = targetParentType + '|' + src;
+											if ( this._fwNestedColGuardLog !== logKey ) {
+												this._fwNestedColGuardLog = logKey;
+												console.debug(
+													'[nested-col][backend] _rearrange simple-guard: targetParentType=' +
+													targetParentType + ' | targetParent=' + src +
+													' -> ' + ( targetParentType === 'column' ? 'allow commit' : 'BLOCK commit' )
+												);
 											}
 										}
 
