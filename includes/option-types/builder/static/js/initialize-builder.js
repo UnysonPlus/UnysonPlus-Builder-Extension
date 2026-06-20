@@ -174,6 +174,12 @@ window.fwExtBuilderInitialize = (function ($) {
 				// glued to the cursor.
 				$( 'body' ).addClass( 'fw-builder-dragging' );
 
+				// Reset the drop guard for this drag. A container's `receive`
+				// sets it true once the item lands somewhere valid; if nothing
+				// commits (a content element dropped on empty space), the `stop`
+				// fallback below smart-places it instead of losing the drop.
+				builder._newItemDropHandled = false;
+
 				if ( window.fwDragDebug ) { window.fwDragDebug.bump( 'd.start' ); }
 
 				var movedType = ui.helper.attr('data-builder-item-type');
@@ -214,7 +220,7 @@ window.fwExtBuilderInitialize = (function ($) {
 					});
 				}
 			},
-			stop: function() {
+			stop: function(event, ui) {
 				// Release the offsetParent pin (see `start`).
 				$( 'body' ).removeClass( 'fw-builder-dragging' );
 
@@ -231,115 +237,63 @@ window.fwExtBuilderInitialize = (function ($) {
 					});
 				}
 
+				// Drop-on-empty-space fallback. When a NEW element is dropped where
+				// the sortable could not commit a placeholder — the content-item
+				// `_rearrange` guard only lets a placeholder settle inside a column,
+				// so dropping content on empty canvas / a bare section never fires
+				// any container's `receive` — mirror click-to-add: scaffold the
+				// section -> column as needed and drop the element in. Only when the
+				// drop landed over the canvas and no `receive` already handled it.
+				if (!builder._newItemDropHandled && isDropOverCanvas(event)) {
+					var added = smartAddNewItem($(this).attr('data-builder-item-type'), $(this));
+
+					if (added) {
+						scrollItemIntoView(added.item);
+					}
+				}
+
+				builder._newItemDropHandled = false;
+
 				if ( window.fwDragDebug ) { window.fwDragDebug.bump( 'd.stop' ); }
 			}
 		}, additionalSortableOptions));
 
 		/**
-		 * Smart placement helpers for click-to-add.
+		 * Smart placement for click-to-add AND drop-on-empty-space.
 		 *
-		 * Clicking an element icon used to dump EVERY type straight into
-		 * the root collection (base allowDestinationType(null) === true for
-		 * all types), which produced an invalid tree — bare columns and
-		 * content shortcodes stranded at root, where they then could not be
-		 * dragged into a section (a jQuery UI sortable empty-sibling-container
-		 * limitation, not a rule). Instead, a click now resolves a VALID
-		 * destination, auto-creating the missing container scaffold:
+		 * Clicking (or dropping) an element no longer dumps every type into the
+		 * root collection — which produced an invalid tree (bare columns /
+		 * content stranded at root, then un-draggable into a section). The
+		 * destination is resolved to a VALID level, auto-creating the missing
+		 * container scaffold. The resolution lives on the builder instance so
+		 * the click handler here, the drop `receive` handler, and the drop
+		 * fallback below all share ONE implementation (Builder#getSmartDestination
+		 * / #isValidDirectParent in builder.js):
 		 *
-		 *   - section / section-like  → appended to the root (unchanged)
-		 *   - column                  → into the LAST section (a standard
-		 *                               section is created if none exists)
-		 *   - content / media (simple)→ into the LAST column on the page
-		 *                               (a section → 1/1 column scaffold is
-		 *                               created if the page has no column yet)
+		 *   - section / section-like  → appended to the root
+		 *   - column / container      → into the LAST section (created if none)
+		 *   - content / media         → into the LAST column (a section → 1/1
+		 *                               column scaffold is created if none exists)
 		 */
-		function isSectionLikeType(type) {
-			if (type === 'section') {
-				return true;
+
+		// Scroll a freshly inserted (often nested) element into view; nested
+		// adds don't fire the rootItems 'add' handler that normally scrolls.
+		function scrollItemIntoView(item) {
+			if (!item || !item.view) {
+				return;
 			}
 
-			return !!(
-				window.fwSectionLikeTypes
-				&&
-				typeof window.fwSectionLikeTypes.isSectionLike === 'function'
-				&&
-				window.fwSectionLikeTypes.isSectionLike(type)
-			);
-		}
+			setTimeout(function(){
+				var el = item.view.$el.get(0);
 
-		// Last root-level section (or section-like) container, document order.
-		function findLastSectionContainer() {
-			var last = null;
-
-			builder.rootItems.each(function(item){
-				if (isSectionLikeType(item.get('type'))) {
-					last = item;
+				if (el && el.scrollIntoView) {
+					el.scrollIntoView({block: 'center'});
 				}
-			});
-
-			return last;
+			}, 50);
 		}
 
-		// Last column anywhere in the tree, document order.
-		function findLastColumn() {
-			var last = null;
-
-			forEachItemRecursive(builder.rootItems, function(item){
-				if (item.get('type') === 'column') {
-					last = item;
-				}
-			});
-
-			return last;
-		}
-
-		function createItemOfType(type, attrs) {
-			var Cls = builder.getRegisteredItemClassByType(type);
-
-			return Cls ? new Cls(attrs || {}) : null;
-		}
-
-		// Ensure a section exists at root; return it (the last one), creating
-		// a standard section when the page has none.
-		function ensureSection() {
-			var section = findLastSectionContainer();
-
-			if (!section) {
-				section = createItemOfType('section');
-
-				if (section) {
-					builder.rootItems.add(section);
-				}
-			}
-
-			return section;
-		}
-
-		// Ensure a column exists to receive content; return the last one,
-		// creating a section → 1/1 column scaffold when the page has none.
-		function ensureColumn() {
-			var column = findLastColumn();
-
-			if (!column) {
-				var section = ensureSection();
-
-				if (!section) {
-					return null;
-				}
-
-				column = createItemOfType('column', {width: '1_1'});
-
-				if (column) {
-					section.get('_items').add(column);
-				}
-			}
-
-			return column;
-		}
-
-		// Pulse the clicked thumbnail (original add animation), then scroll
-		// the freshly inserted element into view. Nested adds don't fire the
-		// rootItems 'add' handler that normally scrolls, so do it here.
+		// Pulse the clicked thumbnail (original add animation), then scroll the
+		// freshly inserted element into view.
 		function afterClickAdd($thumb, scrollToItem) {
 			clearTimeout($thumb.attr('data-animation-timeout-id'));
 			$thumb.removeClass('fw-builder-animation-item-type-add');
@@ -350,15 +304,58 @@ window.fwExtBuilderInitialize = (function ($) {
 				}, 500)
 			);
 
-			if (scrollToItem && scrollToItem.view) {
-				setTimeout(function(){
-					var el = scrollToItem.view.$el.get(0);
+			scrollItemIntoView(scrollToItem);
+		}
 
-					if (el && el.scrollIntoView) {
-						el.scrollIntoView({block: 'center'});
-					}
-				}, 50);
+		// True when a thumbnail drag's mouse-up landed over the canvas (the
+		// .builder-root-items region), so a drop there that the sortable could
+		// not commit can fall back to smart placement instead of vanishing.
+		function isDropOverCanvas(event) {
+			if (!event) {
+				return false;
 			}
+
+			var $canvas = $this.find('.builder-root-items').first();
+
+			if (!$canvas.length) {
+				return false;
+			}
+
+			var offset = $canvas.offset();
+			var width  = $canvas.outerWidth();
+			var height = $canvas.outerHeight();
+
+			return event.pageX >= offset.left
+				&& event.pageX <= offset.left + width
+				&& event.pageY >= offset.top
+				&& event.pageY <= offset.top + height;
+		}
+
+		// Create a NEW item of `itemType` from its thumbnail and append it to
+		// its smart destination (scaffolding section / column as needed).
+		// Returns {item, nested} or null if it couldn't be placed.
+		function smartAddNewItem(itemType, $thumb) {
+			var ItemTypeClass = itemType
+				? builder.getRegisteredItemClassByType(itemType)
+				: null;
+
+			if (!ItemTypeClass) {
+				console.error('Unregistered item type: '+ itemType);
+				return null;
+			}
+
+			var dest = builder.getSmartDestination(itemType);
+
+			if (!dest) {
+				console.warn('Could not resolve a destination for "'+ itemType +'"');
+				return null;
+			}
+
+			var newItem = new ItemTypeClass({}, {$thumb: $thumb});
+
+			dest.add(newItem);
+
+			return {item: newItem, nested: dest !== builder.rootItems};
 		}
 
 		/**
@@ -374,46 +371,11 @@ window.fwExtBuilderInitialize = (function ($) {
 				return;
 			}
 
-			var ItemTypeClass = builder.getRegisteredItemClassByType(itemType);
+			var added = smartAddNewItem(itemType, $itemType);
 
-			if (!ItemTypeClass) {
-				console.error('Unregistered item type: '+ itemType);
-				return;
+			if (added) {
+				afterClickAdd($itemType, added.nested ? added.item : null);
 			}
-
-			var newItem = new ItemTypeClass({}, {$thumb: $itemType});
-			var nested = false;
-
-			if (isSectionLikeType(itemType)) {
-				// Top-level container: append to the root (unchanged).
-				builder.rootItems.add(newItem);
-			} else if (itemType === 'column') {
-				// Columns must live in a section: drop into the last one,
-				// creating a standard section first when the page has none.
-				var section = ensureSection();
-
-				if (!section) {
-					console.warn('Could not create a section to hold the column');
-					return;
-				}
-
-				section.get('_items').add(newItem);
-				nested = true;
-			} else {
-				// Content / media: drop into the last column, auto-creating the
-				// section → 1/1 column scaffold when the page has no column yet.
-				var column = ensureColumn();
-
-				if (!column) {
-					console.warn('Could not create a column to hold "'+ itemType +'"');
-					return;
-				}
-
-				column.get('_items').add(newItem);
-				nested = true;
-			}
-
-			afterClickAdd($itemType, nested ? newItem : null);
 		});
 
 		// scroll to the added element

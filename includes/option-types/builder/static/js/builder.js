@@ -262,6 +262,137 @@ jQuery( document ).ready( function ( $ ) {
 			return item;
 		},
 		/**
+		 * Smart click/drop placement helpers, shared by the thumbnail click
+		 * handler, the drop `receive` handler, and the drop-on-empty-space
+		 * fallback. They resolve a VALID destination for a NEW item, auto-
+		 * creating the missing container scaffold so an element never strands
+		 * at an invalid level:
+		 *
+		 *   section / section-like -> root items
+		 *   column                 -> last section's _items (section created if none)
+		 *   content / media        -> last column's _items  (a section -> 1/1
+		 *                             column scaffold is created if the page has
+		 *                             no column yet)
+		 */
+		isSectionLikeType: function ( type ) {
+			if ( type === 'section' ) {
+				return true;
+			}
+
+			return !! (
+				window.fwSectionLikeTypes
+				&&
+				typeof window.fwSectionLikeTypes.isSectionLike === 'function'
+				&&
+				window.fwSectionLikeTypes.isSectionLike( type )
+			);
+		},
+		// Last root-level section (or section-like) container, document order.
+		findLastSectionContainer: function () {
+			var last = null;
+			var that = this;
+
+			this.rootItems.each( function ( item ) {
+				if ( that.isSectionLikeType( item.get( 'type' ) ) ) {
+					last = item;
+				}
+			} );
+
+			return last;
+		},
+		// Last column anywhere in the tree, document order.
+		findLastColumn: function () {
+			var last = null;
+
+			forEachItemRecursive( this.rootItems, function ( item ) {
+				if ( item.get( 'type' ) === 'column' ) {
+					last = item;
+				}
+			} );
+
+			return last;
+		},
+		createItemOfType: function ( type, attrs, options ) {
+			var Cls = this.getRegisteredItemClassByType( type );
+
+			return Cls ? new Cls( attrs || {}, options || {} ) : null;
+		},
+		// Ensure a section exists at root; return it (the last one), creating
+		// a standard section when the page has none.
+		ensureSection: function () {
+			var section = this.findLastSectionContainer();
+
+			if ( ! section ) {
+				section = this.createItemOfType( 'section' );
+
+				if ( section ) {
+					this.rootItems.add( section );
+				}
+			}
+
+			return section;
+		},
+		// Ensure a column exists to receive content; return the last one,
+		// creating a section -> 1/1 column scaffold when the page has none.
+		ensureColumn: function () {
+			var column = this.findLastColumn();
+
+			if ( ! column ) {
+				var section = this.ensureSection();
+
+				if ( ! section ) {
+					return null;
+				}
+
+				column = this.createItemOfType( 'column', { width: '1_1' } );
+
+				if ( column ) {
+					section.get( '_items' ).add( column );
+				}
+			}
+
+			return column;
+		},
+		// The collection a NEW item of `type` should be appended into when its
+		// drop / click location is not a valid direct parent. Scaffolds as needed.
+		// `column` AND `container` are section-level children (a container holds
+		// columns and must never land in a column), so both route into a section.
+		getSmartDestination: function ( type ) {
+			if ( this.isSectionLikeType( type ) ) {
+				return this.rootItems;
+			}
+
+			if ( type === 'column' || type === 'container' ) {
+				var section = this.ensureSection();
+
+				return section ? section.get( '_items' ) : null;
+			}
+
+			var column = this.ensureColumn();
+
+			return column ? column.get( '_items' ) : null;
+		},
+		// Whether `type` may live DIRECTLY inside a container of `parentType`
+		// (parentType null/undefined means the root collection).
+		isValidDirectParent: function ( type, parentType ) {
+			if ( this.isSectionLikeType( type ) ) {
+				return parentType === null || typeof parentType === 'undefined';
+			}
+
+			// A container may only sit inside a section (section-like).
+			if ( type === 'container' ) {
+				return this.isSectionLikeType( parentType );
+			}
+
+			// A column may sit inside a section OR a container.
+			if ( type === 'column' ) {
+				return this.isSectionLikeType( parentType ) || parentType === 'container';
+			}
+
+			// Content / media must live in a column.
+			return parentType === 'column';
+		},
+		/**
 		 * ! Do not rewrite this (it's final)
 		 * @private
 		 *
@@ -833,33 +964,38 @@ jQuery( document ).ready( function ( $ ) {
 										var IncomingItemClass = builder.getRegisteredItemClassByType( incomingItemType );
 
 										if ( IncomingItemClass ) {
-											if (
-												IncomingItemClass.prototype.allowDestinationType( currentItemType )
-												&&
-												(
-													! currentItemType
-													||
-													currentItem.allowIncomingType( incomingItemType )
-												)
-											) {
-												this.collection.add(
-													new IncomingItemClass( {}, {
-														$thumb: ui.item
-													} ),
-													{
-														at: this.$el.find( '> .builder-item-type' ).index()
-													}
-												);
+											var newDroppedItem = new IncomingItemClass( {}, {
+												$thumb: ui.item
+											} );
+
+											if ( builder.isValidDirectParent( incomingItemType, currentItemType ) ) {
+												// Dropped into a valid container — keep the drop position.
+												this.collection.add( newDroppedItem, {
+													at: this.$el.find( '> .builder-item-type' ).index()
+												} );
 											} else {
 												if ( window.fwNestedColDebug !== false ) {
 													console.debug( '[nested-col][backend] receive(new) type="' + incomingItemType +
-														'" into parent="' + ( currentItemType || 'root' ) + '" -> REJECT' +
-														' (allowDestination=' + IncomingItemClass.prototype.allowDestinationType( currentItemType ) +
-														' allowIncoming=' + ( ! currentItemType || currentItem.allowIncomingType( incomingItemType ) ) + ')' );
+														'" into parent="' + ( currentItemType || 'root' ) + '" -> SCAFFOLD' +
+														' (auto section/column placement)' );
 												}
-												// replace all html, so dragged element will be removed
+												// Dropped where this type can't live (e.g. a column at
+												// root, or content outside a column). Route it to a valid
+												// destination, auto-creating the section -> column scaffold
+												// to mirror click-to-add, then re-render this container to
+												// drop the stray placeholder clone.
+												var smartDest = builder.getSmartDestination( incomingItemType );
+
+												if ( smartDest ) {
+													smartDest.add( newDroppedItem );
+												}
+
 												this.render();
 											}
+
+											// Tell the thumbnail drag-stop fallback this drop was handled,
+											// so it doesn't add a second copy.
+											builder._newItemDropHandled = true;
 										} else {
 											console.error( 'Unregistered item type: ' + incomingItemType );
 

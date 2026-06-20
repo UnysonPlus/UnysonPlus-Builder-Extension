@@ -5,7 +5,7 @@ $manifest = array();
 $manifest['name']        = __( 'Builder', 'fw' );
 $manifest['description'] = __( 'Unyson Page Builder Extension', 'fw' );
 
-$manifest['version']     = '1.2.55';
+$manifest['version']     = '1.2.60';
 
 // Repository Info
 $manifest['github_update'] = 'UnysonPlus/UnysonPlus-Builder-Extension';
@@ -28,6 +28,20 @@ $manifest['uri'] = 'http://manual.unyson.io/en/latest/extension/builder/index.ht
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.2.60 - Smart placement now also covers drag-and-drop, not just click. Dropping
+ *          an element from the panel onto empty space used to do nothing (the
+ *          content-item _rearrange guard only lets a placeholder settle inside a
+ *          column, so its `receive` never fired) or strand a column at root.
+ *          The thumbnail-drop `receive` handler now routes any out-of-place drop
+ *          through the same scaffold logic as click, and a drag-stop fallback
+ *          smart-places elements dropped over the canvas where no `receive` could
+ *          commit. The shared resolution moved onto the builder instance
+ *          (Builder#getSmartDestination / #isValidDirectParent in builder.js) so
+ *          the click handler, the drop handler, and the fallback use one
+ *          implementation — which also folds in the `container` type (a container
+ *          and a column are both section-level children). Eliminates the prior
+ *          drift where click knew about new types but drag did not.
+ *
  * 1.2.50 - Smart click-to-add placement. Clicking an element icon used to drop
  *          every type into the root collection (base allowDestinationType(null)
  *          is true for all types), stranding bare columns and content shortcodes
