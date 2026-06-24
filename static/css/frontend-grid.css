@@ -388,6 +388,186 @@
 }
 
 
+/* Row columns — auto-layout: N equal-width columns per row (Bootstrap
+   `row-cols-*` equivalent under the .fw- namespace).
+-------------------------------------------------- */
+.fw-row-cols-1 > * { flex: 0 0 auto; width: 100%; }
+.fw-row-cols-2 > * { flex: 0 0 auto; width: 50%; }
+.fw-row-cols-3 > * { flex: 0 0 auto; width: 33.33333333%; }
+.fw-row-cols-4 > * { flex: 0 0 auto; width: 25%; }
+.fw-row-cols-5 > * { flex: 0 0 auto; width: 20%; }
+.fw-row-cols-6 > * { flex: 0 0 auto; width: 16.66666667%; }
+
+
+/* Numeric gutter utilities (Bootstrap `g-0..5` scale). They set the gutter
+   custom properties read by `.row` / `.fw-row`. `!important` so an explicit
+   gutter on a row beats the Theme Settings default-gap rule (which loads
+   later in the cascade). The NAMED gap-scale utilities (`.g-{slug}`) are
+   emitted separately by framework/includes/css-tokens.php.
+-------------------------------------------------- */
+.g-0 { --bs-gutter-x: 0      !important; --bs-gutter-y: 0      !important; }
+.g-1 { --bs-gutter-x: .25rem !important; --bs-gutter-y: .25rem !important; }
+.g-2 { --bs-gutter-x: .5rem  !important; --bs-gutter-y: .5rem  !important; }
+.g-3 { --bs-gutter-x: 1rem   !important; --bs-gutter-y: 1rem   !important; }
+.g-4 { --bs-gutter-x: 1.5rem !important; --bs-gutter-y: 1.5rem !important; }
+.g-5 { --bs-gutter-x: 3rem   !important; --bs-gutter-y: 3rem   !important; }
+
+.gx-0 { --bs-gutter-x: 0      !important; }
+.gx-1 { --bs-gutter-x: .25rem !important; }
+.gx-2 { --bs-gutter-x: .5rem  !important; }
+.gx-3 { --bs-gutter-x: 1rem   !important; }
+.gx-4 { --bs-gutter-x: 1.5rem !important; }
+.gx-5 { --bs-gutter-x: 3rem   !important; }
+
+.gy-0 { --bs-gutter-y: 0      !important; }
+.gy-1 { --bs-gutter-y: .25rem !important; }
+.gy-2 { --bs-gutter-y: .5rem  !important; }
+.gy-3 { --bs-gutter-y: 1rem   !important; }
+.gy-4 { --bs-gutter-y: 1.5rem !important; }
+.gy-5 { --bs-gutter-y: 3rem   !important; }
+
+
+/* =========================================================================
+ * Utility classes — the cross-cutting Bootstrap utility subset the plugin's
+ * shortcodes emit (flex / display / alignment / sizing / image / radius /
+ * shadow). The plugin no longer ships Bootstrap, and several shortcodes
+ * (image-content, bleed-section, …) carry NO stylesheet of their own — they
+ * shared these helpers via Bootstrap. They are ported here, in the always-
+ * loaded grid sheet, so any shortcode that enqueues `fw-ext-builder-frontend-
+ * grid` gets them. Component CSS (.btn, tabs, alert, …) stays per-shortcode.
+ *
+ * These do NOT include `.m-*` / `.p-*` / `.text-{color}` / `.bg-{color}` —
+ * those are emitted (with their own scale) by framework/includes/css-tokens.php.
+ * ========================================================================= */
+
+/* Display */
+.d-none         { display: none !important; }
+.d-inline       { display: inline !important; }
+.d-inline-block { display: inline-block !important; }
+.d-block        { display: block !important; }
+.d-flex         { display: flex !important; }
+.d-inline-flex  { display: inline-flex !important; }
+
+/* Flex direction / wrap / grow / shrink */
+.flex-row            { flex-direction: row !important; }
+.flex-row-reverse    { flex-direction: row-reverse !important; }
+.flex-column         { flex-direction: column !important; }
+.flex-column-reverse { flex-direction: column-reverse !important; }
+.flex-wrap           { flex-wrap: wrap !important; }
+.flex-nowrap         { flex-wrap: nowrap !important; }
+.flex-fill           { flex: 1 1 auto !important; }
+.flex-grow-0         { flex-grow: 0 !important; }
+.flex-grow-1         { flex-grow: 1 !important; }
+.flex-shrink-0       { flex-shrink: 0 !important; }
+.flex-shrink-1       { flex-shrink: 1 !important; }
+
+/* Align items / self */
+.align-items-start    { align-items: flex-start !important; }
+.align-items-center   { align-items: center !important; }
+.align-items-end      { align-items: flex-end !important; }
+.align-items-stretch  { align-items: stretch !important; }
+.align-items-baseline { align-items: baseline !important; }
+.align-self-start     { align-self: flex-start !important; }
+.align-self-center    { align-self: center !important; }
+.align-self-end       { align-self: flex-end !important; }
+.align-self-stretch   { align-self: stretch !important; }
+
+/* Justify content */
+.justify-content-start   { justify-content: flex-start !important; }
+.justify-content-center  { justify-content: center !important; }
+.justify-content-end     { justify-content: flex-end !important; }
+.justify-content-between { justify-content: space-between !important; }
+.justify-content-around  { justify-content: space-around !important; }
+.justify-content-evenly  { justify-content: space-evenly !important; }
+
+/* Text alignment (sc_alignment_class returns these) */
+.text-start  { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-end    { text-align: right !important; }
+.text-left   { text-align: left !important; }
+.text-right  { text-align: right !important; }
+
+/* Sizing */
+.w-25  { width: 25% !important; }
+.w-50  { width: 50% !important; }
+.w-75  { width: 75% !important; }
+.w-100 { width: 100% !important; }
+.w-auto { width: auto !important; }
+.h-100 { height: 100% !important; }
+.h-auto { height: auto !important; }
+.mw-100 { max-width: 100% !important; }
+.mh-100 { max-height: 100% !important; }
+
+/* Auto margins (alignment helpers — NOT the m-* spacing scale) */
+.mx-auto { margin-right: auto !important; margin-left: auto !important; }
+.my-auto { margin-top: auto !important; margin-bottom: auto !important; }
+.ms-auto { margin-left: auto !important; }
+.me-auto { margin-right: auto !important; }
+
+/* Gap (numeric scale; the named .g-{slug} is emitted by css-tokens.php) */
+.gap-0 { gap: 0 !important; }
+.gap-1 { gap: .25rem !important; }
+.gap-2 { gap: .5rem !important; }
+.gap-3 { gap: 1rem !important; }
+.gap-4 { gap: 1.5rem !important; }
+.gap-5 { gap: 3rem !important; }
+
+/* Images */
+.img-fluid { max-width: 100%; height: auto; }
+
+/* Aspect-ratio container (media-video etc.) */
+.ratio { position: relative; width: 100%; }
+.ratio::before { display: block; padding-top: var(--fw-aspect-ratio, 56.25%); content: ""; }
+.ratio > * { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.ratio-1x1  { --fw-aspect-ratio: 100%; }
+.ratio-4x3  { --fw-aspect-ratio: 75%; }
+.ratio-16x9 { --fw-aspect-ratio: 56.25%; }
+.ratio-21x9 { --fw-aspect-ratio: 42.85714286%; }
+.ratio-9x16 { --fw-aspect-ratio: 177.77777778%; }
+.ratio-3x4  { --fw-aspect-ratio: 133.33333333%; }
+
+/* Border radius */
+.rounded         { border-radius: .375rem !important; }
+.rounded-0       { border-radius: 0 !important; }
+.rounded-1       { border-radius: .25rem !important; }
+.rounded-2       { border-radius: .375rem !important; }
+.rounded-3       { border-radius: .5rem !important; }
+.rounded-4       { border-radius: 1rem !important; }
+.rounded-5       { border-radius: 2rem !important; }
+.rounded-circle  { border-radius: 50% !important; }
+.rounded-pill    { border-radius: 50rem !important; }
+
+/* Box shadow */
+.shadow-none { box-shadow: none !important; }
+.shadow-sm   { box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075) !important; }
+.shadow      { box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important; }
+.shadow-lg   { box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important; }
+
+/* Screen-reader-only */
+.visually-hidden,
+.visually-hidden-focusable:not(:focus):not(:focus-within) {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+/* Responsive flex/text helpers used by a few shortcodes (md ≥ 768px) */
+@media (min-width: 768px) {
+	.flex-md-row         { flex-direction: row !important; }
+	.flex-md-row-reverse { flex-direction: row-reverse !important; }
+	.flex-md-column      { flex-direction: column !important; }
+	.text-md-start       { text-align: left !important; }
+	.text-md-center      { text-align: center !important; }
+	.text-md-end         { text-align: right !important; }
+}
+
+
 /* Responsive visibility utilities (UnysonPlus shortcode "Hide on" option)
 -------------------------------------------------- */
 @media (max-width: 767.98px) {

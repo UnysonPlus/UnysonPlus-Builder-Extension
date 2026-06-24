@@ -362,6 +362,25 @@ jQuery( document ).ready( function ( $ ) {
 				return this.rootItems;
 			}
 
+			// A root-droppable primitive (e.g. Flexbox) is placed straight at root
+			// with NO section/column scaffold. Detected generically by asking the
+			// item class whether it allows a root (null) destination, so a new
+			// top-level type works the same way without editing this helper. The
+			// column/container/simple guards keep the existing routing intact.
+			if ( type && type !== 'simple' && type !== 'column' && type !== 'container' ) {
+				var rootCls = this.getRegisteredItemClassByType( type );
+				if (
+					rootCls
+					&& typeof rootCls.prototype.allowDestinationType === 'function'
+					&& rootCls.prototype.allowDestinationType( null ) === true
+				) {
+					if ( window.fwFlexboxDebug !== false ) {
+						console.debug( '[flexbox] getSmartDestination("' + type + '") -> ROOT (allowDestinationType(null)=true)' );
+					}
+					return this.rootItems;
+				}
+			}
+
 			if ( type === 'column' || type === 'container' ) {
 				var section = this.ensureSection();
 
@@ -379,6 +398,18 @@ jQuery( document ).ready( function ( $ ) {
 				return parentType === null || typeof parentType === 'undefined';
 			}
 
+			// A flexbox is a root-level primitive that ALSO nests one level inside
+			// another flexbox (and may sit inside a section band). Without this, a new
+			// flexbox dropped onto a flexbox is deemed "invalid" and scaffolded to root
+			// (the lost-nesting bug). The one-level cap is enforced separately by the
+			// flexbox item's allowIncomingType during the drag.
+			if ( type === 'flexbox' ) {
+				return parentType === null
+					|| typeof parentType === 'undefined'
+					|| parentType === 'flexbox'
+					|| this.isSectionLikeType( parentType );
+			}
+
 			// A container may only sit inside a section (section-like).
 			if ( type === 'container' ) {
 				return this.isSectionLikeType( parentType );
@@ -389,8 +420,9 @@ jQuery( document ).ready( function ( $ ) {
 				return this.isSectionLikeType( parentType ) || parentType === 'container';
 			}
 
-			// Content / media must live in a column.
-			return parentType === 'column';
+			// Content / media must live in a column OR a flexbox (the flexbox is a
+			// content container in its own right, like a column).
+			return parentType === 'column' || parentType === 'flexbox';
 		},
 		/**
 		 * ! Do not rewrite this (it's final)
@@ -1231,12 +1263,14 @@ jQuery( document ).ready( function ( $ ) {
 												console.debug(
 													'[nested-col][backend] _rearrange simple-guard: targetParentType=' +
 													targetParentType + ' | targetParent=' + src +
-													' -> ' + ( targetParentType === 'column' ? 'allow commit' : 'BLOCK commit' )
+													' -> ' + ( ( targetParentType === 'column' || targetParentType === 'flexbox' ) ? 'allow commit' : 'BLOCK commit' )
 												);
 											}
 										}
 
-										if ( targetParentType !== 'column' ) {
+										// A simple element may live in a column OR a flexbox (the flexbox is
+										// a content container too) — commit the placeholder into either.
+										if ( targetParentType !== 'column' && targetParentType !== 'flexbox' ) {
 											if ( rearrangeContainerTimeout ) {
 												clearTimeout( rearrangeContainerTimeout );
 												rearrangeContainerTimeout = null;

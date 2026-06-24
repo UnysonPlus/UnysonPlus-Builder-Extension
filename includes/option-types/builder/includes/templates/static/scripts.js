@@ -108,7 +108,7 @@
 						width: 12,
 						height: 5
 					},
-					width: 180
+					width: 270
 				},
 				content: {
 					text: inst.$el.tooltipContent

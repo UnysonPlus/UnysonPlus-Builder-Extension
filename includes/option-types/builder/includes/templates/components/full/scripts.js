@@ -179,7 +179,7 @@
 							var msg = (json.data && json.data.message)
 								? json.data.message
 								: (localized.l10n.import_failed || 'Failed to import template');
-							window.alert(msg);
+							fw.notify(msg, 'error');
 							return;
 						}
 
@@ -188,7 +188,7 @@
 					.fail(function (xhr, status, error) {
 						loading.hide();
 						console.error('Ajax import error', error);
-						window.alert(localized.l10n.import_failed || 'Failed to import template');
+						fw.notify(localized.l10n.import_failed || 'Failed to import template', 'error');
 					});
 			})
 			.on('click'+ eventsNamespace, 'a.save-template', function () {
