@@ -5,7 +5,7 @@ $manifest = array();
 $manifest['name']        = __( 'Builder', 'fw' );
 $manifest['description'] = __( 'Unyson Page Builder Extension', 'fw' );
 
-$manifest['version']     = '1.2.71';
+$manifest['version']     = '1.2.72';
 
 // Repository Info
 $manifest['github_update'] = 'UnysonPlus/UnysonPlus-Builder-Extension';
@@ -28,6 +28,14 @@ $manifest['uri'] = 'http://manual.unyson.io/en/latest/extension/builder/index.ht
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.2.72 - Completed the fifths column family. The grid.columns width set now offers
+ *          2/5 (40%), 3/5 (60%) and 4/5 (80%) alongside the existing 1/5 (20%), and the
+ *          fifths are relabelled with their percentage — "1/5 (20%)" etc. New grid CSS
+ *          classes fw-col-*-{25,35,45} (40/60/80%) and fifth offsets fw-offset-*-{15,25,
+ *          35,45} at every breakpoint (frontend, backend canvas fw.css, and the BS3
+ *          legacy sheet). Twelfths can't express 40/60/80%, so a row of e.g. 2/5 + 3/5
+ *          columns is now possible without a CSS hack.
+ *
  * 1.2.60 - Smart placement now also covers drag-and-drop, not just click. Dropping
  *          an element from the panel onto empty space used to do nothing (the
  *          content-item _rearrange guard only lets a placeholder settle inside a

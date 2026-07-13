@@ -26,7 +26,7 @@ $cfg['grid.columns'] = array(
 		'frontend_class' => 'fw-col-12 fw-col-sm-2',
 	),
 	'1_5' => array(
-		'title'          => '1/5',
+		'title'          => '1/5 (20%)',
 		'backend_class'  => 'fw-col-sm-15',
 		'frontend_class' => 'fw-col-12 fw-col-sm-15',
 	),
@@ -39,6 +39,12 @@ $cfg['grid.columns'] = array(
 		'title'          => '1/3',
 		'backend_class'  => 'fw-col-sm-4',
 		'frontend_class' => 'fw-col-12 fw-col-sm-4',
+	),
+	// 2/5 (40%) — UnysonPlus fifth; renders as the fw-col-*-25 grid class (40%).
+	'2_5' => array(
+		'title'          => '2/5 (40%)',
+		'backend_class'  => 'fw-col-sm-25',
+		'frontend_class' => 'fw-col-12 fw-col-sm-25',
 	),
 	'5_12' => array(
 		'title'          => '5/12',
@@ -55,6 +61,12 @@ $cfg['grid.columns'] = array(
 		'backend_class'  => 'fw-col-sm-7',
 		'frontend_class' => 'fw-col-12 fw-col-sm-7',
 	),
+	// 3/5 (60%) — UnysonPlus fifth; renders as the fw-col-*-35 grid class (60%).
+	'3_5' => array(
+		'title'          => '3/5 (60%)',
+		'backend_class'  => 'fw-col-sm-35',
+		'frontend_class' => 'fw-col-12 fw-col-sm-35',
+	),
 	'2_3' => array(
 		'title'          => '2/3',
 		'backend_class'  => 'fw-col-sm-8',
@@ -64,6 +76,12 @@ $cfg['grid.columns'] = array(
 		'title'          => '3/4',
 		'backend_class'  => 'fw-col-sm-9',
 		'frontend_class' => 'fw-col-12 fw-col-sm-9',
+	),
+	// 4/5 (80%) — UnysonPlus fifth; renders as the fw-col-*-45 grid class (80%).
+	'4_5' => array(
+		'title'          => '4/5 (80%)',
+		'backend_class'  => 'fw-col-sm-45',
+		'frontend_class' => 'fw-col-12 fw-col-sm-45',
 	),
 	'5_6' => array(
 		'title'          => '5/6',

@@ -402,6 +402,67 @@
 }
 
 
+/* UnysonPlus fifths — 2/5 (40%), 3/5 (60%), 4/5 (80%) columns + fifth offsets.
+   Siblings of the built-in 1/5 (fw-col-*-15 = 20% / fw-offset-*-15). Kept in one
+   block so every breakpoint stays together; equal specificity + later position
+   make them behave exactly like the per-tier fw-col / fw-offset rules above.
+   Twelfths can't express 40/60/80%, so these complete the fifths family.
+-------------------------------------------------- */
+.fw-col-25 { flex: 0 0 auto; width: 40%; }
+.fw-col-35 { flex: 0 0 auto; width: 60%; }
+.fw-col-45 { flex: 0 0 auto; width: 80%; }
+.fw-offset-15 { margin-left: 20%; }
+.fw-offset-25 { margin-left: 40%; }
+.fw-offset-35 { margin-left: 60%; }
+.fw-offset-45 { margin-left: 80%; }
+
+@media (min-width: 576px) {
+	.fw-col-sm-25 { flex: 0 0 auto; width: 40%; }
+	.fw-col-sm-35 { flex: 0 0 auto; width: 60%; }
+	.fw-col-sm-45 { flex: 0 0 auto; width: 80%; }
+	.fw-offset-sm-15 { margin-left: 20%; }
+	.fw-offset-sm-25 { margin-left: 40%; }
+	.fw-offset-sm-35 { margin-left: 60%; }
+	.fw-offset-sm-45 { margin-left: 80%; }
+}
+@media (min-width: 768px) {
+	.fw-col-md-25 { flex: 0 0 auto; width: 40%; }
+	.fw-col-md-35 { flex: 0 0 auto; width: 60%; }
+	.fw-col-md-45 { flex: 0 0 auto; width: 80%; }
+	.fw-offset-md-15 { margin-left: 20%; }
+	.fw-offset-md-25 { margin-left: 40%; }
+	.fw-offset-md-35 { margin-left: 60%; }
+	.fw-offset-md-45 { margin-left: 80%; }
+}
+@media (min-width: 992px) {
+	.fw-col-lg-25 { flex: 0 0 auto; width: 40%; }
+	.fw-col-lg-35 { flex: 0 0 auto; width: 60%; }
+	.fw-col-lg-45 { flex: 0 0 auto; width: 80%; }
+	.fw-offset-lg-15 { margin-left: 20%; }
+	.fw-offset-lg-25 { margin-left: 40%; }
+	.fw-offset-lg-35 { margin-left: 60%; }
+	.fw-offset-lg-45 { margin-left: 80%; }
+}
+@media (min-width: 1200px) {
+	.fw-col-xl-25 { flex: 0 0 auto; width: 40%; }
+	.fw-col-xl-35 { flex: 0 0 auto; width: 60%; }
+	.fw-col-xl-45 { flex: 0 0 auto; width: 80%; }
+	.fw-offset-xl-15 { margin-left: 20%; }
+	.fw-offset-xl-25 { margin-left: 40%; }
+	.fw-offset-xl-35 { margin-left: 60%; }
+	.fw-offset-xl-45 { margin-left: 80%; }
+}
+@media (min-width: 1400px) {
+	.fw-col-xxl-25 { flex: 0 0 auto; width: 40%; }
+	.fw-col-xxl-35 { flex: 0 0 auto; width: 60%; }
+	.fw-col-xxl-45 { flex: 0 0 auto; width: 80%; }
+	.fw-offset-xxl-15 { margin-left: 20%; }
+	.fw-offset-xxl-25 { margin-left: 40%; }
+	.fw-offset-xxl-35 { margin-left: 60%; }
+	.fw-offset-xxl-45 { margin-left: 80%; }
+}
+
+
 /* Row columns — auto-layout: N equal-width columns per row (Bootstrap
    `row-cols-*` equivalent under the .fw- namespace).
 -------------------------------------------------- */

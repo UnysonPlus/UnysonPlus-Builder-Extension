@@ -816,3 +816,10 @@ img {
 		margin-left: 0%;
 	}
 }
+
+/* UnysonPlus fifths — BS3-legacy parity with .fw-col-*-15 (2/5 40%, 3/5 60%, 4/5 80%) */
+.fw-col-xs-25,.fw-col-xs-35,.fw-col-xs-45{float:left}
+.fw-col-xs-25{width:40%}.fw-col-xs-35{width:60%}.fw-col-xs-45{width:80%}
+@media (min-width:768px){.fw-col-sm-25,.fw-col-sm-35,.fw-col-sm-45{float:left}.fw-col-sm-25{width:40%}.fw-col-sm-35{width:60%}.fw-col-sm-45{width:80%}}
+@media (min-width:992px){.fw-col-md-25,.fw-col-md-35,.fw-col-md-45{float:left}.fw-col-md-25{width:40%}.fw-col-md-35{width:60%}.fw-col-md-45{width:80%}}
+@media (min-width:1200px){.fw-col-lg-25,.fw-col-lg-35,.fw-col-lg-45{float:left}.fw-col-lg-25{width:40%}.fw-col-lg-35{width:60%}.fw-col-lg-45{width:80%}}
