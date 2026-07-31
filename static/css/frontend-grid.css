@@ -103,7 +103,13 @@
 
 .fw-row {
 	--bs-gutter-x: var(--fw-gutter-x, 1.5rem);
-	--bs-gutter-y: var(--fw-gutter-y, 0);
+	/* Vertical gutter defaults to the SAME 1.5rem as the horizontal one (was 0, the
+	   inherited Bootstrap-5 default). The negative-margin offset below makes this
+	   net-zero for single-line rows, so only rows whose columns WRAP onto a second
+	   line gain the vertical gap — fixing "no space between wrapped column rows"
+	   without touching non-wrapping layouts. Section Gap / Default Gap / Gap-Y all
+	   still override --bs-gutter-y where set. */
+	--bs-gutter-y: var(--fw-gutter-y, 1.5rem);
 	display: flex;
 	flex-wrap: wrap;
 	margin-top: calc(-1 * var(--bs-gutter-y));
