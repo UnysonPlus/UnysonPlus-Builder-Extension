@@ -1,10 +1,10 @@
 /**
- * Create qTips for elements with data-hover-tip="Tip Text" attribute
+ * Create tooltips for elements with data-hover-tip="Tip Text" attribute
  */
 window.fwExtBuilderRootItemsTips = (function(rootItems){
 	var $ = jQuery,
 		/**
-		 * Store all created qTip instances APIs
+		 * Store all created tooltip instance APIs
 		 */
 		tipsAPIs = [],
 		destroyTips = function(){
@@ -13,18 +13,18 @@ window.fwExtBuilderRootItemsTips = (function(rootItems){
 			tipsAPIs = [];
 		},
 		makeTip = function($el){
-			if ($el.attr('data-hasqtip')) {
+			if ($el.attr('data-fw-tooltip')) {
 				return;
 			}
 
-			$el.qtip({
+			$el.fwTooltip({
 				position: {
 					at: 'top center',
 					my: 'bottom center',
 					viewport: rootItems.view.$el.parent()
 				},
 				style: {
-					classes: 'qtip-fw qtip-fw-builder',
+					classes: 'fw-tooltip-default fw-tooltip-builder',
 					tip: {
 						width: 12,
 						height: 5
@@ -35,9 +35,9 @@ window.fwExtBuilderRootItemsTips = (function(rootItems){
 				}
 			});
 
-			tipsAPIs.push($el.qtip('api'));
+			tipsAPIs.push($el.fwTooltip('api'));
 
-			$el.qtip('api').show();
+			$el.fwTooltip('api').show();
 		};
 
 	rootItems.view.$el.on('mouseenter', '[data-hover-tip]', function(){

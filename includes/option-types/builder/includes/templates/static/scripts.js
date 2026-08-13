@@ -89,7 +89,7 @@
 
 		inst.tooltipApi = inst.$el.headerTools
 			.find('.template-container .template-btn')
-			.qtip({
+			.fwTooltip({
 				show: 'click',
 				hide: 'unfocus',
 				position: {
@@ -103,7 +103,7 @@
 					}
 				},
 				style: {
-					classes: 'qtip-fw qtip-fw-builder',
+					classes: 'fw-tooltip-default fw-tooltip-builder',
 					tip: {
 						width: 12,
 						height: 5
@@ -114,7 +114,7 @@
 					text: inst.$el.tooltipContent
 				}
 			})
-			.qtip('api');
+			.fwTooltip('api');
 
 			/**
 			 * Accordion

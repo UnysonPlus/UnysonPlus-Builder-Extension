@@ -514,14 +514,14 @@ window.fwExtBuilderInitialize = (function ($) {
 			 * Add tips to thumbnails
 			 */
 			$this.find('.builder-items-types .builder-item-type [data-hover-tip]').each(function(){
-				$(this).qtip({
+				$(this).fwTooltip({
 					position: {
 						at: 'top center',
 						my: 'bottom center',
 						viewport: $('body')
 					},
 					style: {
-						classes: 'qtip-fw qtip-fw-builder',
+						classes: 'fw-tooltip-default fw-tooltip-builder',
 						tip: {
 							width: 12,
 							height: 5

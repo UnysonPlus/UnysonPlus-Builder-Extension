@@ -494,15 +494,15 @@ body.rtl .fw-option-type-builder .builder-item-type {
 /* end: backend fixes */
 
 
-/* qtip */
+/* tooltip */
 
-.qtip-fw-builder {
+.fw-tooltip-builder {
 	padding: 5px 10px;
 	min-width: 0;
 }
 
-.qtip-fw-builder .qtip-content {
+.fw-tooltip-builder .fw-tooltip-content {
 	text-align: center;
 }
 
-/* end: qtip */
+/* end: tooltip */

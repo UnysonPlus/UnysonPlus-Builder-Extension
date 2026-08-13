@@ -432,8 +432,8 @@ abstract class FW_Option_Type_Builder extends FW_Option_Type {
 			);
 
 			wp_enqueue_script(
-				'fw-option-builder-qtips',
-				$this->get_static_uri( '/js/qtips.js' ),
+				'fw-option-builder-tooltips',
+				$this->get_static_uri( '/js/tooltips.js' ),
 				array( 'fw-option-builder' ),
 				$version,
 				true
