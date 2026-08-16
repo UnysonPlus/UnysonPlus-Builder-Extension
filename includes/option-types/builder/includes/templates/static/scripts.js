@@ -41,7 +41,7 @@
 						'builder_type': this.builder.get('type')
 					}
 				})
-				.done(_.bind(function(json){
+				.done((json) => {
 					this.isBusy = false;
 					this.tooltipLoading.hide();
 
@@ -60,13 +60,13 @@
 						$elements: this.$el.tooltipContent,
 						builder: this.builder,
 						tooltipLoading: this.tooltipLoading,
-						tooltipRefreshCallback: _.bind(this.refresh, this),
-						tooltipHideCallback: _.bind(function(){ this.tooltipApi.hide(); }, this)
+						tooltipRefreshCallback: this.refresh.bind(this),
+						tooltipHideCallback: () => { this.tooltipApi.hide(); }
 					});
 
 					this.$el.tooltipContent.trigger('fw:option-type:builder:templates:after-html-replace');
-				}, this))
-				.fail(_.bind(function(xhr, status, error){
+				})
+				.fail((xhr, status, error) => {
 					this.isBusy = false;
 					this.tooltipLoading.hide();
 
@@ -75,7 +75,7 @@
 						'<h4>Ajax Error</h4><p class="fw-text-danger">'+ String(error) +'</p>',
 						{showCloseButton: false}
 					);
-				}, this));
+				});
 			}
 		};
 

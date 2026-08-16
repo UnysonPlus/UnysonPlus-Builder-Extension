@@ -39,10 +39,10 @@ var FwBuilderComponents = {
  *
  * this.widthChangerView.delegateEvents(); // rebind events after element "remove" happened
  */
-FwBuilderComponents.ItemView.WidthChanger = Backbone.View.extend({
+FwBuilderComponents.ItemView.WidthChanger = fw.View.extend({
 	tagName: 'div',
 	className: 'fw-builder-item-width-changer',
-	template: _.template(
+	template: fw.template(
 		'<a href="#" class="decrease-width dashicons '+ (
 			jQuery(document.body).hasClass('rtl') ? 'dashicons-arrow-right-alt2' : 'dashicons-arrow-left-alt2'
 		) +'"'+
@@ -64,11 +64,10 @@ FwBuilderComponents.ItemView.WidthChanger = Backbone.View.extend({
 	 */
 	modelAttribute: 'width',
 	initialize: function(options) {
-		_.extend(this, _.pick(options,
-			'view',
-			'widths',
-			'modelAttribute'
-		));
+		// Object.assign(this, _.pick(options, …)) — copy only the listed options.
+		['view', 'widths', 'modelAttribute'].forEach(function (key) {
+			if (options && options[key] !== undefined) { this[key] = options[key]; }
+		}, this);
 
 		// set special properties for first and last width
 		{
@@ -84,7 +83,7 @@ FwBuilderComponents.ItemView.WidthChanger = Backbone.View.extend({
 		this.updateWidth();
 
 		var widthId    = this.model.get(this.modelAttribute);
-		var width      = _.findWhere(this.widths, {id: widthId});
+		var width      = this.widths.filter(function (w) { return w.id === widthId; })[0];
 		var widthTitle = '?';
 
 		if (width) {
@@ -113,8 +112,8 @@ FwBuilderComponents.ItemView.WidthChanger = Backbone.View.extend({
 		e.stopPropagation();
 
 		var widthId           = this.model.get(this.modelAttribute);
-		var widthsIds         = _.pluck(this.widths, 'id');
-		var currentWidthIndex = _.indexOf(widthsIds, widthId);
+		var widthsIds         = this.widths.map(function (w) { return w.id; });
+		var currentWidthIndex = widthsIds.indexOf(widthId);
 
 		if (currentWidthIndex == -1) {
 			// Current id does not exists (invalid) set first width
@@ -132,8 +131,8 @@ FwBuilderComponents.ItemView.WidthChanger = Backbone.View.extend({
 		e.stopPropagation();
 
 		var widthId           = this.model.get(this.modelAttribute);
-		var widthsIds         = _.pluck(this.widths, 'id');
-		var currentWidthIndex = _.indexOf(widthsIds, widthId);
+		var widthsIds         = this.widths.map(function (w) { return w.id; });
+		var currentWidthIndex = widthsIds.indexOf(widthId);
 
 		if (currentWidthIndex == -1) {
 			// Current id does not exists (invalid) set last width
@@ -152,10 +151,10 @@ FwBuilderComponents.ItemView.WidthChanger = Backbone.View.extend({
 			widthId = this.model.get(this.modelAttribute);
 		}
 
-		var widthsIds = _.pluck(this.widths, 'id');
+		var widthsIds = this.widths.map(function (w) { return w.id; });
 
 		// check if correct
-		if (-1 == _.indexOf(widthsIds, widthId)) {
+		if (-1 == widthsIds.indexOf(widthId)) {
 			// set default
 			widthId = widthsIds[
 				parseInt(widthsIds.length / 2) // middle width
@@ -169,10 +168,10 @@ FwBuilderComponents.ItemView.WidthChanger = Backbone.View.extend({
 
 		this.view.$el
 			.removeClass(
-				_.pluck(this.widths, 'backend_class').join(' ')
+				this.widths.map(function (w) { return w.backend_class; }).join(' ')
 			)
 			.addClass(
-				_.findWhere(this.widths, {id: widthId})['backend_class']
+				this.widths.filter(function (w) { return w.id === widthId; })[0]['backend_class']
 			);
 	}
 });
@@ -193,10 +192,10 @@ FwBuilderComponents.ItemView.WidthChanger = Backbone.View.extend({
  *
  * this.inlineEditor.delegateEvents(); // rebind events after element "remove" happened
  */
-FwBuilderComponents.ItemView.InlineTextEditor = Backbone.View.extend({
+FwBuilderComponents.ItemView.InlineTextEditor = fw.View.extend({
 	tagName: 'div',
 	className: 'fw-builder-item-inline-text-editor',
-	template: _.template(
+	template: fw.template(
 		'<input type="text" style="width: auto;" value="<%- value %>" onclick="return false;">&nbsp;<button class="button" onclick="return false;"><%- save %></button>'
 	),
 	events: {
@@ -218,9 +217,10 @@ FwBuilderComponents.ItemView.InlineTextEditor = Backbone.View.extend({
 		this.$el.addClass('fw-hidden');
 	},
 	initialize: function(options) {
-		_.extend(this, _.pick(options,
-			'editAttribute'
-		));
+		// Object.assign(this, _.pick(options, …)) — copy only the listed options.
+		['editAttribute'].forEach(function (key) {
+			if (options && options[key] !== undefined) { this[key] = options[key]; }
+		}, this);
 
 		this.delimiter = '/';
 
@@ -244,7 +244,7 @@ FwBuilderComponents.ItemView.InlineTextEditor = Backbone.View.extend({
 		var value = this.editAttributeWitoutRoot
 			? fw.ops(this.editAttributeWitoutRoot, val,
 				// clone to not change by reference, else values will be equal and model.set() will not trigger 'change'
-				_.clone(this.model.get(this.editAttributeRoot)))
+				fw.clone(this.model.get(this.editAttributeRoot)))
 			: val;
 
 		this.model.set(this.editAttributeRoot, value);

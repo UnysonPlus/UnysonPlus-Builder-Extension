@@ -53,7 +53,9 @@
 				return this.storage[this.activeIndex];
 			},
 			saveState: function (item) {
-				this.storage = _.initial(this.storage, (this.storage.length-1) - this.activeIndex);
+				// _.initial(arr, n) returns all but the LAST n entries.
+				var drop = (this.storage.length - 1) - this.activeIndex;
+				this.storage = drop > 0 ? this.storage.slice(0, this.storage.length - drop) : this.storage.slice();
 				this.storage.push(item);
 				this.activeIndex = this.storage.length - 1;
 			}

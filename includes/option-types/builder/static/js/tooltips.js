@@ -8,7 +8,7 @@ window.fwExtBuilderRootItemsTips = (function(rootItems){
 		 */
 		tipsAPIs = [],
 		destroyTips = function(){
-			_.each(tipsAPIs, function(api) { api.destroy(true); });
+			tipsAPIs.forEach(function(api) { api.destroy(true); });
 
 			tipsAPIs = [];
 		},

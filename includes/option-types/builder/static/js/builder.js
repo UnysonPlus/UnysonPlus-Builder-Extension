@@ -175,7 +175,7 @@ jQuery( document ).ready( function ( $ ) {
 		}
 	}
 
-	var Builder = Backbone.Model.extend( {
+	var Builder = fw.Class.extend( {
 		defaults: {
 			type: null // required
 		},
@@ -371,6 +371,21 @@ jQuery( document ).ready( function ( $ ) {
 				var rootCls = this.getRegisteredItemClassByType( type );
 				if (
 					rootCls
+					/**
+					 * hasOwnProperty, NOT just "is a function": the base
+					 * classes.Item.allowDestinationType returns `true` for
+					 * everything, so an item type that never overrode it
+					 * inherited a permissive yes and got dumped at ROOT
+					 * instead of into a column. That is what put Contact Form
+					 * (and any other item type that does not declare this
+					 * method) outside the last section instead of inside it.
+					 *
+					 * Root-dropping must therefore be an EXPLICIT opt-in: the
+					 * class has to declare allowDestinationType itself and
+					 * return true for a null parent. Flexbox — the type this
+					 * branch was written for — does exactly that.
+					 */
+					&& Object.prototype.hasOwnProperty.call( rootCls.prototype, 'allowDestinationType' )
 					&& typeof rootCls.prototype.allowDestinationType === 'function'
 					&& rootCls.prototype.allowDestinationType( null ) === true
 				) {
@@ -384,12 +399,24 @@ jQuery( document ).ready( function ( $ ) {
 			if ( type === 'column' || type === 'container' ) {
 				var section = this.ensureSection();
 
-				return section ? section.get( '_items' ) : null;
+				return section ? section.get( '_items' ) : this.rootItems;
 			}
 
 			var column = this.ensureColumn();
 
-			return column ? column.get( '_items' ) : null;
+			/**
+			 * `null` here means the section/column scaffold could not be built,
+			 * and the ONLY reason for that is a builder that registers no
+			 * `section`/`column` item types at all — i.e. a FLAT builder such as
+			 * the newsletter-crm email builder or a custom one. Those have
+			 * nowhere to scaffold to and root IS their only container, so
+			 * returning null made every drop and click silently do nothing
+			 * ("Could not resolve a destination for ..."). Fall back to root.
+			 *
+			 * The page builder is unaffected: there `ensureColumn()` always
+			 * succeeds, so this branch is never reached.
+			 */
+			return column ? column.get( '_items' ) : this.rootItems;
 		},
 		// Whether `type` may live DIRECTLY inside a container of `parentType`
 		// (parentType null/undefined means the root collection).
@@ -415,9 +442,23 @@ jQuery( document ).ready( function ( $ ) {
 				return this.isSectionLikeType( parentType );
 			}
 
-			// A column may sit inside a section OR a container.
+			// A column may sit inside a section, a container, OR another column.
+			//
+			// `parentType === 'column'` mirrors the flexbox exception above, and for
+			// the same reason: the column item's allowIncomingType() explicitly
+			// permits ONE level of column-in-column, but this function disagreed and
+			// declared such a drop invalid — so a column dragged from the palette
+			// straight into a nested column was scaffolded away and appeared to
+			// vanish. Dragging an existing on-canvas column into another column
+			// worked, because that path is a sortable move checked by
+			// allowIncomingType() instead, which is why the bug looked arbitrary.
+			//
+			// The one-level cap is NOT enforced here — allowIncomingType() refuses a
+			// column whose own parent is already a column, during the drag.
 			if ( type === 'column' ) {
-				return this.isSectionLikeType( parentType ) || parentType === 'container';
+				return this.isSectionLikeType( parentType )
+					|| parentType === 'container'
+					|| parentType === 'column';
 			}
 
 			// Content / media must live in a column OR a flexbox (the flexbox is a
@@ -481,7 +522,7 @@ jQuery( document ).ready( function ( $ ) {
 						return false;
 					}
 
-					_.each( _items, function ( _item ) {
+					_items.forEach( function ( _item ) {
 						var ItemClass = builder.getRegisteredItemClassByType( _item['type'] );
 
 						if ( ! ItemClass ) {
@@ -555,7 +596,7 @@ jQuery( document ).ready( function ( $ ) {
 
 				/** Items */
 				{
-					this.classes.Items = Backbone.Collection.extend( {
+					this.classes.Items = fw.Collection.extend( {
 						/**
 						 * Guess which item type to create from json
 						 * (usually called on .reset())
@@ -626,7 +667,7 @@ jQuery( document ).ready( function ( $ ) {
 						}
 					} );
 
-					this.classes.ItemsView = Backbone.View.extend( {
+					this.classes.ItemsView = fw.View.extend( {
 						// required
 
 						collection: null,
@@ -635,7 +676,7 @@ jQuery( document ).ready( function ( $ ) {
 
 						tagName: 'div',
 						className: 'builder-items fw-row fw-border-box-sizing',
-						template: _.template( '' ),
+						template: fw.template( '' ),
 						events: {},
 						initSortableTimeout: 0,
 						initialize: function () {
@@ -802,7 +843,7 @@ jQuery( document ).ready( function ( $ ) {
 								additionalSortableOptions
 							)
 
-							this.$el.sortable(_.extend({
+							this.$el.sortable(Object.assign({
 								items: '> .builder-item',
 								helper: 'original',
 								connectWith: '#' + builder.$input.closest( '.fw-option-type-builder' ).attr( 'id' ) + ' .builder-root-items .builder-items',
@@ -1400,7 +1441,7 @@ jQuery( document ).ready( function ( $ ) {
 
 				/** Item */
 				{
-					this.classes.Item = Backbone.RelationalModel.extend( {
+					this.classes.Item = fw.Class.extend( {
 						// required
 
 						defaults: {
@@ -1413,16 +1454,24 @@ jQuery( document ).ready( function ( $ ) {
 
 						// end: required
 
-						/** ! Do not overwrite this property */
-						relations: [
-							{
-								type: Backbone.HasMany,
-								key: '_items',
-								//relatedModel: builder.classes.Item, // class does not exists at this point, initialized below
-								collectionType: builder.classes.Items,
-								collectionKey: '_item'
-							}
-						],
+						/**
+						 * ! Do not overwrite this property
+						 *
+						 * The item tree. Was a backbone-relational HasMany; it is now
+						 * fw.Class's `nested` declaration, which does the same one job:
+						 * `_items` holds a builder.classes.Items collection, and that
+						 * collection carries `_item` back-pointing at this model.
+						 *
+						 * `collection` is a function because builder.classes.Items and
+						 * this class reference each other — neither exists in full when
+						 * the other is declared. (backbone-relational had the same
+						 * problem and solved it by patching relatedModel afterwards.)
+						 */
+						nested: {
+							key: '_items',
+							collectionKey: '_item',
+							collection: function () { return builder.classes.Items; }
+						},
 						initialize: function () {
 							this.view = new builder.classes.ItemView( {
 								id: 'fw-builder-item-' + this.cid,
@@ -1462,11 +1511,26 @@ jQuery( document ).ready( function ( $ ) {
 						}
 					} );
 
-					{
-						this.classes.Item.prototype.relations[0].relatedModel = this.classes.Item;
-					}
+					/**
+					 * NOTE: nothing to patch here any more.
+					 *
+					 * This used to be
+					 *   this.classes.Item.prototype.relations[0].relatedModel = this.classes.Item;
+					 * because backbone-relational needed to know which class the
+					 * `_items` relation contained, and that class did not exist yet
+					 * when the relation was declared.
+					 *
+					 * It is no longer needed, and `Items.prototype.model` must NOT be
+					 * set to classes.Item: `Items.model` is deliberately a FACTORY
+					 * (see its definition) that picks the registered subclass from
+					 * attrs.type. Overwriting it would make every item a generic Item.
+					 *
+					 * The tree itself is built by createItemsFromJSON(), which only
+					 * ever needed `get('_items')` to already be an empty collection —
+					 * exactly what the `nested` declaration guarantees.
+					 */
 
-					this.classes.ItemView = Backbone.View.extend( {
+					this.classes.ItemView = fw.View.extend( {
 						// required
 
 						/** @type {builder.classes.Item} */
@@ -1478,7 +1542,7 @@ jQuery( document ).ready( function ( $ ) {
 
 						tagName: 'div',
 						className: 'builder-item fw-border-box-sizing fw-col-xs-12',
-						template: _.template( [
+						template: fw.template( [
 							'<div style="border: 1px solid #CCC; padding: 5px; color: #999; background: #fff;">',
 							'<em class="fw-text-muted">Default View</em>',
 							'<a href="#" onclick="return false;" class="dashicons fw-x"></a>',
@@ -1567,9 +1631,9 @@ jQuery( document ).ready( function ( $ ) {
 						 * Sometimes item.get('_items') is empty at this point, wait a few milliseconds
 						 * Bad solution, I home BackboneRelation will be fixed and this code will be removed
 						 */
-						setTimeout( _.bind( function () {
-							_fixItemsCollections( this.get( '_items' ) );
-						}, item ), 0 );
+						setTimeout( function () {
+							_fixItemsCollections( item.get( '_items' ) );
+						}, 0 );
 					} );
 				}
 

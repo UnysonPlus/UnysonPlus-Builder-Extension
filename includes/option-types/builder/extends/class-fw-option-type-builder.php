@@ -392,13 +392,23 @@ abstract class FW_Option_Type_Builder extends FW_Option_Type {
 			wp_enqueue_script(
 				'fw-option-builder',
 				$this->get_static_uri( '/js/builder.js' ),
+				/**
+				 * 'backbone' and 'backbone-relational' are gone as of 1.2.76: the
+				 * builder's four base classes now extend fw.Class / fw.Collection /
+				 * fw.View, and the single HasMany relation is fw.Class's `nested`
+				 * declaration.
+				 *
+				 * 'underscore' is declared EXPLICITLY because it used to arrive
+				 * transitively as a dependency OF backbone. builder.js, helpers.js,
+				 * history.js, initialize-builder.js and tooltips.js all still use _.*,
+				 * so dropping backbone without this would leave `_` undefined — the
+				 * exact failure that broke the Extensions manager in 2.16.11.
+				 */
 				array(
 					'jquery-ui-draggable',
 					'jquery-ui-sortable',
 					'fw',
-					'fw-events',
-					'backbone',
-					'backbone-relational'
+					'fw-events'
 				),
 				$version,
 				true

@@ -134,7 +134,7 @@ window.fwExtBuilderInitialize = (function ($) {
 			additionalSortableOptions
 		)
 
-		$this.find('> .builder-items-types .builder-item-type').draggable(_.extend({
+		$this.find('> .builder-items-types .builder-item-type').draggable(Object.assign({
 			connectToSortable: '#'+ id +' .builder-root-items .builder-items',
 			helper: 'clone',
 			distance: 10,
@@ -433,11 +433,19 @@ window.fwExtBuilderInitialize = (function ($) {
 
 		$options.closest('.fw-backend-option').addClass('fw-backend-option-type-builder');
 
-		var triggerInit = _.once(function () {
-			fwEvents.trigger('fw:option-type:builder:init', {
-				$elements: $options
-			});
-		});
+		// _.once(): run at most once, however many times it is called.
+		var triggerInit = (function () {
+			var done = false;
+
+			return function () {
+				if (done) { return; }
+				done = true;
+
+				fwEvents.trigger('fw:option-type:builder:init', {
+					$elements: $options
+				});
+			};
+		})();
 
 		$options.each(function () {
 			var $el = $(this);
