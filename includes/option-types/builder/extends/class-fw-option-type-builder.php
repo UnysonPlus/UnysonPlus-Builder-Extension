@@ -87,14 +87,35 @@ abstract class FW_Option_Type_Builder extends FW_Option_Type {
 	 * @return FW_Option_Type_Builder_Item[]
 	 */
 	protected function get_item_types() {
-		static $did_action = false;
+		/**
+		 * Once PER BUILDER TYPE, not once per process.
+		 *
+		 * This flag used to be a plain `static $did_action = false`. A static
+		 * declared inside a method is shared by every instance AND every subclass,
+		 * so the FIRST builder type to ask for its items set the flag for all of
+		 * them — and every other builder type then skipped its own
+		 * `:register_items` action and reported zero item types.
+		 *
+		 * The symptom was remote from the cause: resolving the FORM builder's item
+		 * types during `init` (the Gutenberg bridge does this to build a field
+		 * editor) left the PAGE builder with no registered item types, so every
+		 * item in a saved page fell back to the generic "Default View" box. No PHP
+		 * error, nothing in the log — just a page builder that rendered nothing
+		 * recognisable.
+		 *
+		 * Keying by builder type makes each one fire its own action exactly once,
+		 * which is what the surrounding code always assumed.
+		 */
+		static $did_action = array();
 
-		if ( ! $did_action ) {
+		$builder_type = $this->get_type();
+
+		if ( ! isset( $did_action[ $builder_type ] ) ) {
 			/**
 			 * @since 1.2.4
 			 */
-			do_action( 'fw_option_type_builder:' . $this->get_type() . ':register_items' );
-			$did_action = true;
+			do_action( 'fw_option_type_builder:' . $builder_type . ':register_items' );
+			$did_action[ $builder_type ] = true;
 		}
 
 		$items = array();
