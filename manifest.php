@@ -5,7 +5,7 @@ $manifest = array();
 $manifest['name']        = __( 'Builder', 'fw' );
 $manifest['description'] = __( 'Unyson Page Builder Extension', 'fw' );
 
-$manifest['version']     = '1.2.83';
+$manifest['version']     = '1.2.84';
 
 // Repository Info
 $manifest['github_update'] = 'UnysonPlus/UnysonPlus-Builder-Extension';
