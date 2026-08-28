@@ -161,7 +161,7 @@ body.rtl .fw-option-type-builder .template-container {
 }
 
 .fw-builder-templates-types > .fw-builder-templates-type ul.std li a.template-export:hover {
-	color: #0073aa;
+	color: var(--fw-accent, #3858e9);
 }
 
 /* Hidden file input for the Import button (the visible <a class="import-template">
