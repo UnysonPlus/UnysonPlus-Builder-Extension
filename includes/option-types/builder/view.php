@@ -63,6 +63,7 @@
 <?php
 // do action once to add one backdrop for all builders in page
 if ($option['fullscreen']) {
+	/** Fires once to add a single shared backdrop element for all fullscreen builders on the page. */
 	do_action('fw_builder_fullscreen_add_backdrop');
 }
 ?>

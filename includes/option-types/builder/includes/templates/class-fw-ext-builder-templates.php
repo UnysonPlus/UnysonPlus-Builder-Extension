@@ -93,6 +93,7 @@ final class FW_Ext_Builder_Templates
 	public static function _action_builder_enqueue($data)
 	{
 		if (!
+			/** Filters whether the builder option exposes the template-saving feature, based on its template_saving config. */
 			apply_filters(
 				'fw_builder_has_template_saving_feature',
 				$data['option']['template_saving'],
@@ -157,6 +158,7 @@ final class FW_Ext_Builder_Templates
 			self::$components = array();
 
 			self::$registration_is_allowed = true;
+			/** Fires to let listeners register builder template components during component collection. */
 			do_action('fw_ext_builder:template_components_register');
 			self::$registration_is_allowed = false;
 

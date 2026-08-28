@@ -386,6 +386,7 @@ abstract class FW_Option_Type_Builder extends FW_Option_Type {
 		$option  = $this->fix_base_defaults( $option );
 		$version = fw_ext( 'builder' )->manifest->get_version();
 
+		/** Fires before the builder option type enqueues its assets, passing the option and version for early asset setup. */
 		do_action( 'fw_ext_builder:option_type:builder:before_enqueue',
 			array(
 				'option'  => $option,
@@ -539,6 +540,7 @@ abstract class FW_Option_Type_Builder extends FW_Option_Type {
 			);
 		}
 
+		/** Fires when the builder option type enqueues its assets, passing the option, version, and base URI. */
 		do_action( 'fw_ext_builder:option_type:builder:enqueue',
 			array(
 				'option'  => $option,
@@ -650,6 +652,7 @@ abstract class FW_Option_Type_Builder extends FW_Option_Type {
 			$option['attr']['class'] .= ' fw-option-type-builder';
 
 			if ( $option['fullscreen'] ) {
+				/** Filters extra CSS classes added to a fullscreen builder option's wrapper. */
 				$option['attr']['class'] .= apply_filters( 'fw_builder_fullscreen_add_classes', '' );
 			}
 

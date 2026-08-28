@@ -1,6 +1,8 @@
 <?php if (!defined('FW')) die('Forbidden');
 
 /**
+ * Returns the builder's item-width definitions for a builder type, or a single width by id.
+ *
  * Get builder item width data
  *
  * Default widths are specified in the config, but some builder types can have custom widths
@@ -13,6 +15,7 @@
  * @param null|mixed $default_value Return this value if specified key does not exist
  * @return array
  */
+/** Returns the builder's item-width definitions for a builder type, or a single width by id. */
 function fw_ext_builder_get_item_width($builder_type, $width_id = null, $default_value = null) {
 	try {
 		$cache_key = fw()->extensions->get('builder')->get_cache_key('item_widths/'. $builder_type);
@@ -25,6 +28,7 @@ function fw_ext_builder_get_item_width($builder_type, $width_id = null, $default
 			$widths = fw()->extensions->get('builder')->get_config('grid.columns'); // new config key
 		}
 
+		/** Filters the available grid item widths for a given builder type. */
 		$widths = apply_filters('fw_builder_item_widths:'. $builder_type, $widths);
 
 		FW_Cache::set($cache_key, $widths);
@@ -56,6 +60,8 @@ function fw_ext_builder_get_item_widths_for_js($builder_type) {
 }
 
 /**
+ * Renders an icon string as HTML, detecting an image URL, a font-icon class, or raw HTML.
+ *
  * @param string $icon A string that is meant to be an icon (an image, a font icon class, or something else)
  * @return string
  */

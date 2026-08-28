@@ -66,6 +66,7 @@ abstract class FW_Ext_Builder_Templates_Component
 		} catch (FW_Cache_Not_Found_Exception $e) {
 			$templates = array();
 
+			/** Filters the predefined templates registered for a given builder type and component. */
 			foreach(apply_filters('fw_ext_builder:predefined_templates:'. $builder_type .':'. $this->get_type(), array(
 				// 'id' => array('title' => 'Title', 'json' => '[]')
 			)) as $id => $template) {
