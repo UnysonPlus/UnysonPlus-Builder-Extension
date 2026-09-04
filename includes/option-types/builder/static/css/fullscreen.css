@@ -33,7 +33,10 @@ body.admin-bar .fw-option-type-builder-fullscreen-backdrop {
 .fw-option-type-builder > .builder-items-types .fullscreen-btn {
 	float: right;
 	cursor: pointer;
-	color: #0074a2;
+	/* Was the WordPress 3.x-era #0074a2. Tracks the skin's accent so this stays in
+	   step with the rest of the admin; the literal is the skin's own value, for the
+	   pages where the skin stylesheet is not enqueued. */
+	color: var(--u-accent, #3858e9);
 	margin: -5px 10px 10px 0;
 }
 
@@ -45,23 +48,33 @@ body.rtl .fw-option-type-builder > .builder-items-types .fullscreen-btn {
 	float: left;
 }
 
+/* The two icons are SVG MASKS filled with `currentColor`, not background images.
+ *
+ * The PNGs these replaced were 9x9 tiles with the WordPress 3.x-era #0074a2 baked
+ * into every pixel, which is why the button still read as legacy blue after its
+ * text colour was updated -- the colour lived in the image, where CSS could not
+ * reach it. As a mask the artwork carries only a shape, and the paint comes from
+ * `currentColor`, i.e. the .fullscreen-btn `color` above. So the icon now tracks
+ * --u-accent automatically and a future accent change needs no new asset.
+ *
+ * The -webkit- prefix is kept for older WebKit; both are unprefixed-safe in every
+ * browser this admin supports. */
 .fw-option-type-builder > .builder-items-types .fullscreen-btn .icon-fullscreen-on {
 	width: 9px;
 	height: 18px;
 	margin-right: 5px;
-	background-position: center;
-	background-image: url(../img/fullscreen/fullscreen-on.png);
-	background-repeat: no-repeat;
+	background-color: currentColor;
+	-webkit-mask: url(../img/fullscreen/fullscreen-on.svg) no-repeat center / 9px 9px;
+	mask: url(../img/fullscreen/fullscreen-on.svg) no-repeat center / 9px 9px;
 }
 
 .fw-option-type-builder > .builder-items-types .fullscreen-btn .icon-fullscreen-off {
 	width: 9px;
 	height: 18px;
 	margin-right: 5px;
-	background-position: center;
-	background-image: url(../img/fullscreen/fullscreen-off.png);
-	background-repeat: no-repeat;
-
+	background-color: currentColor;
+	-webkit-mask: url(../img/fullscreen/fullscreen-off.svg) no-repeat center / 9px 9px;
+	mask: url(../img/fullscreen/fullscreen-off.svg) no-repeat center / 9px 9px;
 }
 
 @media (max-width: 782px) {

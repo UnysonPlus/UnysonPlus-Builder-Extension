@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" width="9" height="9">
+	<!-- CSS MASK, not a picture: only the alpha is used, and the filled area is
+	     painted in the button's own colour (see fullscreen.css). The notches are
+	     traced as exact pixel staircases rather than true triangles, because a
+	     mathematical hypotenuse lands on half pixel coverage and rasterised one
+	     row out from the 9x9 PNG this replaced. Verified pixel identical. -->
+	<path fill="#000" fill-rule="evenodd" shape-rendering="crispEdges"
+	      d="M0 0H9V9H0Z M5 1H6V2H7V3H8V4H5Z M1 5H4V8H3V7H2V6H1Z"/>
+</svg>

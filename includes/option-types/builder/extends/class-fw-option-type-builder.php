@@ -97,7 +97,7 @@ abstract class FW_Option_Type_Builder extends FW_Option_Type {
 		 * `:register_items` action and reported zero item types.
 		 *
 		 * The symptom was remote from the cause: resolving the FORM builder's item
-		 * types during `init` (the Gutenberg bridge does this to build a field
+		 * types during `init` (the blocks bridge does this to build a field
 		 * editor) left the PAGE builder with no registered item types, so every
 		 * item in a saved page fell back to the generic "Default View" box. No PHP
 		 * error, nothing in the log — just a page builder that rendered nothing

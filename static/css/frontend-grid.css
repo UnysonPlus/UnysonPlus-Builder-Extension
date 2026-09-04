@@ -745,3 +745,294 @@
 	margin-top: 0;
 }
 
+
+/* Modern Grid Div — child spans. A Grid Div (display:grid) carries .fw-grid; each direct
+   child maps its fw-col-{n} Width fraction to a CSS Grid track span (12-track model: 1/3 =
+   span 4, 2/3 = span 8). max-width:none clears the flex width cap so the span alone sizes it. */
+.fw-grid > [class*="fw-col-"]{max-width:none}
+.fw-grid > .fw-col-1{grid-column:span 1}
+.fw-grid > .fw-col-2{grid-column:span 2}
+.fw-grid > .fw-col-3{grid-column:span 3}
+.fw-grid > .fw-col-4{grid-column:span 4}
+.fw-grid > .fw-col-5{grid-column:span 5}
+.fw-grid > .fw-col-6{grid-column:span 6}
+.fw-grid > .fw-col-7{grid-column:span 7}
+.fw-grid > .fw-col-8{grid-column:span 8}
+.fw-grid > .fw-col-9{grid-column:span 9}
+.fw-grid > .fw-col-10{grid-column:span 10}
+.fw-grid > .fw-col-11{grid-column:span 11}
+.fw-grid > .fw-col-12{grid-column:span 12}
+@media (min-width:768px){
+	.fw-grid > .fw-col-md-1{grid-column:span 1}
+	.fw-grid > .fw-col-md-2{grid-column:span 2}
+	.fw-grid > .fw-col-md-3{grid-column:span 3}
+	.fw-grid > .fw-col-md-4{grid-column:span 4}
+	.fw-grid > .fw-col-md-5{grid-column:span 5}
+	.fw-grid > .fw-col-md-6{grid-column:span 6}
+	.fw-grid > .fw-col-md-7{grid-column:span 7}
+	.fw-grid > .fw-col-md-8{grid-column:span 8}
+	.fw-grid > .fw-col-md-9{grid-column:span 9}
+	.fw-grid > .fw-col-md-10{grid-column:span 10}
+	.fw-grid > .fw-col-md-11{grid-column:span 11}
+	.fw-grid > .fw-col-md-12{grid-column:span 12}
+}
+@media (min-width:992px){
+	.fw-grid > .fw-col-lg-1{grid-column:span 1}
+	.fw-grid > .fw-col-lg-2{grid-column:span 2}
+	.fw-grid > .fw-col-lg-3{grid-column:span 3}
+	.fw-grid > .fw-col-lg-4{grid-column:span 4}
+	.fw-grid > .fw-col-lg-5{grid-column:span 5}
+	.fw-grid > .fw-col-lg-6{grid-column:span 6}
+	.fw-grid > .fw-col-lg-7{grid-column:span 7}
+	.fw-grid > .fw-col-lg-8{grid-column:span 8}
+	.fw-grid > .fw-col-lg-9{grid-column:span 9}
+	.fw-grid > .fw-col-lg-10{grid-column:span 10}
+	.fw-grid > .fw-col-lg-11{grid-column:span 11}
+	.fw-grid > .fw-col-lg-12{grid-column:span 12}
+}
+
+/* Auto-row: a BLOCK Div (no d-flex / no fw-grid) that directly holds a fractional-Width
+   child (fw-col-*) becomes a flex row, so dropping two 1/2 Divs into a Section lays them
+   side-by-side without switching the Section to Flex. Scoped off flex/grid Divs so it never
+   overrides an explicit nowrap / grid. Needs :has() (Baseline 2023+). */
+.fw-flexbox:not(.fw-flex):not(.fw-grid):has(> [class*="fw-span-"]){display:flex;flex-wrap:wrap}
+
+/* ===== Modern fw-* utility layer (house-namespaced; aliases the Bootstrap-style
+   classes above). Emitted by the flexbox Div. fw-span-N = 12-col width / grid span. ===== */
+.fw-flex{display:flex!important;flex-wrap:wrap}
+/* Default Section content container — the same centred max-width (site width, but never past the
+   viewport minus the gutter) on every section-tag Div, so it's a shared class emitted by the view
+   instead of a per-element inline style. An EXPLICIT Content Width value still gets its own rule
+   (in the consolidated footer stylesheet). */
+.fw-contained{max-width:min(var(--container-max-desktop, var(--site-max-width, 1170px)), calc(100% - 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem))));margin-left:auto;margin-right:auto}
+/* Full-Width Band: a Section stretches edge-to-edge (its background is full-bleed) while its CONTENT
+   is inset by symmetric padding to --fw-cw (defaulting to the site container), always keeping at
+   least the site gutter. No max-width on the band itself; the padding does the containment, so it
+   works whatever the section's Display (block / flex / grid) is. --fw-cw is set per-section only when
+   a non-default Content Width is chosen. */
+.fw-full-bleed{max-width:none;padding-left:max(var(--container-gutter, clamp(1.25rem, 3vw, 2rem)),calc((100% - var(--fw-cw, var(--container-max-desktop, var(--site-max-width, 1170px)))) / 2));padding-right:max(var(--container-gutter, clamp(1.25rem, 3vw, 2rem)),calc((100% - var(--fw-cw, var(--container-max-desktop, var(--site-max-width, 1170px)))) / 2))}
+.fw-shrink-0{flex-shrink:0!important}
+/* Grid Div: display + track count are SHARED classes (emitted by the flexbox view for a numeric
+   column count) instead of an inline grid-template-columns, so an equal / spanning grid needs no
+   per-element style. fw-grid-N = N equal minmax(0,1fr) tracks; a raw template or auto-fit still
+   falls back to one inline declaration (the documented long tail). */
+.fw-grid{display:grid!important}
+.fw-grid-dense{grid-auto-flow:dense}
+.fw-grid-1{grid-template-columns:repeat(1,minmax(0,1fr))}
+.fw-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fw-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.fw-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.fw-grid-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.fw-grid-6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.fw-grid-7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.fw-grid-8{grid-template-columns:repeat(8,minmax(0,1fr))}
+.fw-grid-9{grid-template-columns:repeat(9,minmax(0,1fr))}
+.fw-grid-10{grid-template-columns:repeat(10,minmax(0,1fr))}
+.fw-grid-11{grid-template-columns:repeat(11,minmax(0,1fr))}
+.fw-grid-12{grid-template-columns:repeat(12,minmax(0,1fr))}
+.fw-grid > [class*="fw-span-"]{max-width:none}
+.fw-flex-row{flex-direction:row!important}
+.fw-flex-row-reverse{flex-direction:row-reverse!important}
+.fw-flex-column{flex-direction:column!important}
+.fw-flex-column-reverse{flex-direction:column-reverse!important}
+.fw-flex-wrap{flex-wrap:wrap!important}
+.fw-flex-nowrap{flex-wrap:nowrap!important}
+.fw-justify-start{justify-content:flex-start!important}
+.fw-justify-center{justify-content:center!important}
+.fw-justify-end{justify-content:flex-end!important}
+.fw-justify-between{justify-content:space-between!important}
+.fw-justify-around{justify-content:space-around!important}
+.fw-justify-evenly{justify-content:space-evenly!important}
+.fw-items-start{align-items:flex-start!important}
+.fw-items-center{align-items:center!important}
+.fw-items-end{align-items:flex-end!important}
+.fw-items-stretch{align-items:stretch!important}
+.fw-items-baseline{align-items:baseline!important}
+.fw-content-start{align-content:flex-start!important}
+.fw-content-center{align-content:center!important}
+.fw-content-end{align-content:flex-end!important}
+.fw-content-between{align-content:space-between!important}
+.fw-content-around{align-content:space-around!important}
+.fw-content-stretch{align-content:stretch!important}
+.fw-self-start{align-self:flex-start!important}
+.fw-self-center{align-self:center!important}
+.fw-self-end{align-self:flex-end!important}
+.fw-self-stretch{align-self:stretch!important}
+.fw-self-baseline{align-self:baseline!important}
+.fw-grow-1{flex-grow:1!important}
+.fw-grow-0{flex-grow:0!important}
+.fw-span-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%}
+.fw-span-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%}
+.fw-span-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%}
+.fw-span-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%}
+.fw-span-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%}
+.fw-span-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%}
+.fw-span-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%}
+.fw-span-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%}
+.fw-span-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%}
+.fw-span-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%}
+.fw-span-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%}
+.fw-span-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%}
+/* fw-fifth-N = a fifth width (N/5), joining the same shared-class + --fw-span-pct mechanism as the
+   twelfths so fifths need no per-cell width <style>. Named by numerator (not a 60-base span) to
+   avoid colliding with the existing 12-based .fw-col-N / .fw-span-N column classes. */
+.fw-fifth-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%}
+.fw-fifth-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%}
+.fw-fifth-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%}
+.fw-fifth-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%}
+.fw-flex > [class*="fw-span-"],.fw-flex > [class*="fw-fifth-"]{width:calc(var(--fw-span-pct,100%) - var(--fw-flex-gap,0px))}
+/* Content-sizing widths as shared classes (intrinsic sizing) — no per-cell width <style>. */
+.fw-w-fit{flex:0 0 auto;width:fit-content;width:-moz-fit-content;max-width:none}
+.fw-w-max{flex:0 0 auto;width:max-content;max-width:none}
+.fw-w-min{flex:0 0 auto;width:min-content;max-width:none}
+.fw-grid > .fw-span-1{grid-column:span 1}
+.fw-grid > .fw-span-2{grid-column:span 2}
+.fw-grid > .fw-span-3{grid-column:span 3}
+.fw-grid > .fw-span-4{grid-column:span 4}
+.fw-grid > .fw-span-5{grid-column:span 5}
+.fw-grid > .fw-span-6{grid-column:span 6}
+.fw-grid > .fw-span-7{grid-column:span 7}
+.fw-grid > .fw-span-8{grid-column:span 8}
+.fw-grid > .fw-span-9{grid-column:span 9}
+.fw-grid > .fw-span-10{grid-column:span 10}
+.fw-grid > .fw-span-11{grid-column:span 11}
+.fw-grid > .fw-span-12{grid-column:span 12}
+/* Responsive Collapse — shared classes emitted by the flexbox Div's "Responsive Collapse" option
+   (flexbox view.php), instead of a per-element @media <style> block, so N identical children don't
+   each repeat the same rule. fw-grid-collapse: an equal 3–8-col grid -> 2 cols on tablet, 1 on phone.
+   fw-grid-collapse-1: any other grid (2-col, or a 12-track spanning grid) -> 1 column on phones
+   (child spans reset). fw-collapse: a flex row stacks its children to full width on phones. */
+@media (min-width:768px) and (max-width:991.98px){
+	.fw-grid.fw-grid-collapse{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media (max-width:767.98px){
+	.fw-grid.fw-grid-collapse,.fw-grid.fw-grid-collapse-1{grid-template-columns:1fr!important}
+	.fw-grid.fw-grid-collapse-1 > *{grid-column:auto!important}
+	.fw-flex.fw-collapse > *{flex-basis:100%!important;max-width:100%!important;width:100%!important}
+}
+@media (min-width:768px){
+	.fw-flex-md-row{flex-direction:row!important}
+	.fw-flex-md-row-reverse{flex-direction:row-reverse!important}
+	.fw-flex-md-column{flex-direction:column!important}
+	.fw-flex-md-column-reverse{flex-direction:column-reverse!important}
+	.fw-flex-md-wrap{flex-wrap:wrap!important}
+	.fw-flex-md-nowrap{flex-wrap:nowrap!important}
+	.fw-justify-md-start{justify-content:flex-start!important}
+	.fw-justify-md-center{justify-content:center!important}
+	.fw-justify-md-end{justify-content:flex-end!important}
+	.fw-justify-md-between{justify-content:space-between!important}
+	.fw-justify-md-around{justify-content:space-around!important}
+	.fw-justify-md-evenly{justify-content:space-evenly!important}
+	.fw-items-md-start{align-items:flex-start!important}
+	.fw-items-md-center{align-items:center!important}
+	.fw-items-md-end{align-items:flex-end!important}
+	.fw-items-md-stretch{align-items:stretch!important}
+	.fw-items-md-baseline{align-items:baseline!important}
+	.fw-content-md-start{align-content:flex-start!important}
+	.fw-content-md-center{align-content:center!important}
+	.fw-content-md-end{align-content:flex-end!important}
+	.fw-content-md-between{align-content:space-between!important}
+	.fw-content-md-around{align-content:space-around!important}
+	.fw-content-md-stretch{align-content:stretch!important}
+	.fw-self-md-start{align-self:flex-start!important}
+	.fw-self-md-center{align-self:center!important}
+	.fw-self-md-end{align-self:flex-end!important}
+	.fw-self-md-stretch{align-self:stretch!important}
+	.fw-self-md-baseline{align-self:baseline!important}
+	.fw-grow-md-1{flex-grow:1!important}
+	.fw-grow-md-0{flex-grow:0!important}
+	.fw-span-md-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%}
+	.fw-span-md-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%}
+	.fw-span-md-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%}
+	.fw-span-md-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%}
+	.fw-span-md-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%}
+	.fw-span-md-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%}
+	.fw-span-md-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%}
+	.fw-span-md-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%}
+	.fw-span-md-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%}
+	.fw-span-md-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%}
+	.fw-span-md-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%}
+	.fw-span-md-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%}
+	.fw-fifth-md-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%}
+	.fw-fifth-md-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%}
+	.fw-fifth-md-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%}
+	.fw-fifth-md-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%}
+	.fw-w-md-fit{flex:0 0 auto;width:fit-content;width:-moz-fit-content;max-width:none}
+	.fw-w-md-max{flex:0 0 auto;width:max-content;max-width:none}
+	.fw-w-md-min{flex:0 0 auto;width:min-content;max-width:none}
+	.fw-grid > .fw-span-md-1{grid-column:span 1}
+	.fw-grid > .fw-span-md-2{grid-column:span 2}
+	.fw-grid > .fw-span-md-3{grid-column:span 3}
+	.fw-grid > .fw-span-md-4{grid-column:span 4}
+	.fw-grid > .fw-span-md-5{grid-column:span 5}
+	.fw-grid > .fw-span-md-6{grid-column:span 6}
+	.fw-grid > .fw-span-md-7{grid-column:span 7}
+	.fw-grid > .fw-span-md-8{grid-column:span 8}
+	.fw-grid > .fw-span-md-9{grid-column:span 9}
+	.fw-grid > .fw-span-md-10{grid-column:span 10}
+	.fw-grid > .fw-span-md-11{grid-column:span 11}
+	.fw-grid > .fw-span-md-12{grid-column:span 12}
+}
+@media (min-width:992px){
+	.fw-flex-lg-row{flex-direction:row!important}
+	.fw-flex-lg-row-reverse{flex-direction:row-reverse!important}
+	.fw-flex-lg-column{flex-direction:column!important}
+	.fw-flex-lg-column-reverse{flex-direction:column-reverse!important}
+	.fw-flex-lg-wrap{flex-wrap:wrap!important}
+	.fw-flex-lg-nowrap{flex-wrap:nowrap!important}
+	.fw-justify-lg-start{justify-content:flex-start!important}
+	.fw-justify-lg-center{justify-content:center!important}
+	.fw-justify-lg-end{justify-content:flex-end!important}
+	.fw-justify-lg-between{justify-content:space-between!important}
+	.fw-justify-lg-around{justify-content:space-around!important}
+	.fw-justify-lg-evenly{justify-content:space-evenly!important}
+	.fw-items-lg-start{align-items:flex-start!important}
+	.fw-items-lg-center{align-items:center!important}
+	.fw-items-lg-end{align-items:flex-end!important}
+	.fw-items-lg-stretch{align-items:stretch!important}
+	.fw-items-lg-baseline{align-items:baseline!important}
+	.fw-content-lg-start{align-content:flex-start!important}
+	.fw-content-lg-center{align-content:center!important}
+	.fw-content-lg-end{align-content:flex-end!important}
+	.fw-content-lg-between{align-content:space-between!important}
+	.fw-content-lg-around{align-content:space-around!important}
+	.fw-content-lg-stretch{align-content:stretch!important}
+	.fw-self-lg-start{align-self:flex-start!important}
+	.fw-self-lg-center{align-self:center!important}
+	.fw-self-lg-end{align-self:flex-end!important}
+	.fw-self-lg-stretch{align-self:stretch!important}
+	.fw-self-lg-baseline{align-self:baseline!important}
+	.fw-grow-lg-1{flex-grow:1!important}
+	.fw-grow-lg-0{flex-grow:0!important}
+	.fw-span-lg-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%}
+	.fw-span-lg-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%}
+	.fw-span-lg-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%}
+	.fw-span-lg-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%}
+	.fw-span-lg-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%}
+	.fw-span-lg-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%}
+	.fw-span-lg-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%}
+	.fw-span-lg-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%}
+	.fw-span-lg-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%}
+	.fw-span-lg-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%}
+	.fw-span-lg-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%}
+	.fw-span-lg-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%}
+	.fw-fifth-lg-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%}
+	.fw-fifth-lg-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%}
+	.fw-fifth-lg-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%}
+	.fw-fifth-lg-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%}
+	.fw-w-lg-fit{flex:0 0 auto;width:fit-content;width:-moz-fit-content;max-width:none}
+	.fw-w-lg-max{flex:0 0 auto;width:max-content;max-width:none}
+	.fw-w-lg-min{flex:0 0 auto;width:min-content;max-width:none}
+	.fw-grid > .fw-span-lg-1{grid-column:span 1}
+	.fw-grid > .fw-span-lg-2{grid-column:span 2}
+	.fw-grid > .fw-span-lg-3{grid-column:span 3}
+	.fw-grid > .fw-span-lg-4{grid-column:span 4}
+	.fw-grid > .fw-span-lg-5{grid-column:span 5}
+	.fw-grid > .fw-span-lg-6{grid-column:span 6}
+	.fw-grid > .fw-span-lg-7{grid-column:span 7}
+	.fw-grid > .fw-span-lg-8{grid-column:span 8}
+	.fw-grid > .fw-span-lg-9{grid-column:span 9}
+	.fw-grid > .fw-span-lg-10{grid-column:span 10}
+	.fw-grid > .fw-span-lg-11{grid-column:span 11}
+	.fw-grid > .fw-span-lg-12{grid-column:span 12}
+}

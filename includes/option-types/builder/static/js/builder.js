@@ -353,11 +353,35 @@ jQuery( document ).ready( function ( $ ) {
 
 			return column;
 		},
+		// Ensure a MODERN content band exists at root: the last root-level Flexbox (Div)
+		// tagged <section>, or a freshly created one (display:block, contained by default).
+		// This replaces the legacy section -> 1/1 column scaffold for loose content drops
+		// when the flexbox (Div) item type is registered.
+		ensureFlexboxSection: function () {
+			var found = null;
+			this.rootItems.each( function ( item ) {
+				if ( item.get( 'type' ) === 'flexbox' ) {
+					var atts = item.get( 'atts' ) || {};
+					if ( atts.html_tag === 'section' ) { found = item; }
+				}
+			} );
+
+			if ( ! found ) {
+				found = this.createItemOfType( 'flexbox' );
+
+				if ( found ) {
+					found.set( 'atts', jQuery.extend( {}, found.get( 'atts' ) || {}, { html_tag: 'section', display: 'block' } ) );
+					this.rootItems.add( found );
+				}
+			}
+
+			return found;
+		},
 		// The collection a NEW item of `type` should be appended into when its
 		// drop / click location is not a valid direct parent. Scaffolds as needed.
 		// `column` AND `container` are section-level children (a container holds
 		// columns and must never land in a column), so both route into a section.
-		getSmartDestination: function ( type ) {
+		getSmartDestination: function ( type, item ) {
 			if ( this.isSectionLikeType( type ) ) {
 				return this.rootItems;
 			}
@@ -389,6 +413,22 @@ jQuery( document ).ready( function ( $ ) {
 					&& typeof rootCls.prototype.allowDestinationType === 'function'
 					&& rootCls.prototype.allowDestinationType( null ) === true
 				) {
+					// Sections-at-root / containers-nested: a section-tagged Div (the Section
+					// tile) is a top-level band, so it goes to ROOT. A Flexbox/Grid Div
+					// (div-tagged) instead nests INTO the last Section — like a classic column
+					// dropping into a section — so a *clicked* Flexbox/Grid never lands loose at
+					// root. Explicit drags into a valid parent are unaffected (they keep their
+					// spot, handled before this helper is consulted).
+					var _tag = ( item && item.get ) ? ( ( item.get( 'atts' ) || {} ).html_tag ) : null;
+					if ( type === 'flexbox' && _tag && _tag !== 'section' ) {
+						var _band = this.ensureFlexboxSection();
+						if ( _band ) {
+							if ( window.fwFlexboxDebug !== false ) {
+								console.debug( '[flexbox] getSmartDestination("' + type + '", <' + _tag + '>) -> nested in Section' );
+							}
+							return _band.get( '_items' );
+						}
+					}
 					if ( window.fwFlexboxDebug !== false ) {
 						console.debug( '[flexbox] getSmartDestination("' + type + '") -> ROOT (allowDestinationType(null)=true)' );
 					}
@@ -400,6 +440,14 @@ jQuery( document ).ready( function ( $ ) {
 				var section = this.ensureSection();
 
 				return section ? section.get( '_items' ) : this.rootItems;
+			}
+
+			// Modern default: a loose content element lands in a Div tagged <section> (a contained
+			// content band), NOT a Bootstrap section > 1/1 column. Falls back to the legacy column
+			// scaffold when the flexbox (Div) item type isn't registered (flat / custom builders).
+			if ( this.getRegisteredItemClassByType( 'flexbox' ) ) {
+				var band = this.ensureFlexboxSection();
+				if ( band ) { return band.get( '_items' ); }
 			}
 
 			var column = this.ensureColumn();
@@ -1057,7 +1105,7 @@ jQuery( document ).ready( function ( $ ) {
 												// destination, auto-creating the section -> column scaffold
 												// to mirror click-to-add, then re-render this container to
 												// drop the stray placeholder clone.
-												var smartDest = builder.getSmartDestination( incomingItemType );
+												var smartDest = builder.getSmartDestination( incomingItemType, newDroppedItem );
 
 												if ( smartDest ) {
 													smartDest.add( newDroppedItem );

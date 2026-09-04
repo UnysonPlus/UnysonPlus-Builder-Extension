@@ -148,7 +148,10 @@ body.fw-builder-dragging .fw-option-type-builder .builder-item.fw-builder-item-d
 }
 
 .fw-option-type-builder > .builder-items-types .fw-options-tabs-wrapper.fw-options-tabs-first-level .ui-tabs-nav .ui-state-active a {
-	color: #0074a2 !important;
+	/* Was the WordPress 3.x-era #0074a2. Tracks the skin's accent so this stays in
+	   step with the rest of the admin; the literal is the skin's own value, for the
+	   pages where the skin stylesheet is not enqueued. */
+	color: var(--u-accent, #3858e9) !important;
 	background-color: #ffffff;
 }
 

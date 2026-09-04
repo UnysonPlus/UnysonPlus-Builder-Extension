@@ -344,14 +344,17 @@ window.fwExtBuilderInitialize = (function ($) {
 				return null;
 			}
 
-			var dest = builder.getSmartDestination(itemType);
+			// Create the item first so its atts (e.g. a flexbox tile's html_tag, preset from the
+			// thumbnail's data-fxtag) are known when we resolve the smart destination — that lets
+			// a Flexbox/Grid Div nest into a Section while a Section-tagged Div stays at root.
+			var newItem = new ItemTypeClass({}, {$thumb: $thumb});
+
+			var dest = builder.getSmartDestination(itemType, newItem);
 
 			if (!dest) {
 				console.warn('Could not resolve a destination for "'+ itemType +'"');
 				return null;
 			}
-
-			var newItem = new ItemTypeClass({}, {$thumb: $thumb});
 
 			dest.add(newItem);
 
