@@ -7,6 +7,10 @@ class FW_Extension_Builder extends FW_Extension
 	 */
 	protected function _init()
 	{
+		// Nested Builder front-end renderer (fw_nested_builder_render / _panes) — loaded
+		// always (admin + front) so any shortcode can render a nested-builder value.
+		require_once dirname( __FILE__ ) . '/includes/option-types/nested-builder/render.php';
+
 		add_action('fw_option_types_init', array($this, '_action_option_types_init'),
 			9 // Other option types requires it
 		);
@@ -20,6 +24,10 @@ class FW_Extension_Builder extends FW_Extension
 
 	public function _action_option_types_init() {
 		require_once dirname( __FILE__ ) . '/includes/option-types/builder/builder.php';
+
+		// Nested Builder — a lightweight embeddable page-builder canvas option type
+		// (subclasses FW_Option_Type_Builder). Loaded after the base is defined.
+		require_once dirname( __FILE__ ) . '/includes/option-types/nested-builder/class-fw-option-type-nested-builder.php';
 	}
 
 	/**

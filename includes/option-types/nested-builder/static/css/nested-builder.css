@@ -1,0 +1,164 @@
+/* Nested Builder — canvas item previews (admin only). The real front-end layout
+ * (flex / grid) is applied by the consumer's renderer, not here. */
+.nb-item {
+	border: 1px solid #dcdcde;
+	border-radius: 5px;
+	background: #fff;
+	margin: 6px 0;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+}
+.nb-item-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 10px;
+	background: #f6f7f7;
+	border-bottom: 1px solid #eee;
+	font-size: 12px;
+	border-radius: 5px 5px 0 0;
+}
+.nb-item-name {
+	font-weight: 600;
+	color: #1d2327;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	text-transform: capitalize;
+}
+.nb-item-name .dashicons { font-size: 16px; width: 16px; height: 16px; }
+.nb-item-actions a { color: #787c82; text-decoration: none; margin-left: 8px; }
+.nb-item-actions a:hover { color: #135e96; }
+.nb-item-actions .dashicons { font-size: 18px; width: 18px; height: 18px; }
+
+.nb-item-preview {
+	padding: 10px 12px;
+	color: #50575e;
+	font-size: 13px;
+	line-height: 1.5;
+	word-break: break-word;
+}
+
+/* Box / Pane drop-zone. The wrapper stays; the inner .builder-items (the actual
+ * sortable) is what the base injects — it MUST have a min-height, otherwise an empty
+ * container is a 0px-tall drop target and children can't be dropped into it. */
+.nb-box-zone {
+	padding: 8px;
+	border-radius: 0 0 5px 5px;
+	background: repeating-linear-gradient(45deg, #fafafa, #fafafa 8px, #f2f3f5 8px, #f2f3f5 16px);
+}
+.nb-box-zone .builder-items {
+	margin: 0;
+	min-height: 44px;
+}
+/* Empty-state hint + a clearer drop target while dragging. */
+.nb-box-zone .builder-items:empty {
+	border: 1px dashed #c3c4c7;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, .5);
+}
+body.fw-builder-dragging .nb-box-zone .builder-items { min-height: 52px; }
+
+/* --- Fit into a Theme-Settings option row --------------------------------- */
+/* The standalone page-builder is designed to fill a full post-edit screen: a 200px
+ * empty root canvas (builder.css) and a palette that floats above it separated by a
+ * full-width divider. Inside a narrow option row that reads as "broken" — a void with
+ * a disconnected toolbar. Reframe the whole option as ONE contained card (palette
+ * toolbar on top, canvas below) so it looks like a single, finished control that
+ * matches the compact feel of the other option types. */
+
+/* The card shell around the entire option. */
+.fw-option-type-nested-builder.fw-option-type-builder {
+	position: relative;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	background: #fff;
+	overflow: hidden;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .03);
+}
+
+/* "Experimental" badge. Anchored to the card (not the postbox title) so it rides with
+ * the option type wherever it's used and never leaks HTML into the box header's
+ * aria-label. It sits in the empty right side of the palette toolbar. Purely
+ * decorative — it labels the feature's maturity while development is deferred. */
+.fw-option-type-nested-builder.fw-option-type-builder::before {
+	content: 'Experimental';
+	position: absolute;
+	top: 15px;
+	right: 14px;
+	z-index: 2;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: #8a6100;
+	background: #fff3cd;
+	border: 1px solid #f2d888;
+	border-radius: 999px;
+	padding: 3px 9px;
+	line-height: 1.4;
+	pointer-events: none;
+}
+
+/* Palette = a compact toolbar strip along the top of the card. Drop the page-builder's
+ * heavy padding / full-width divider; keep just a thin separator to the canvas. */
+.fw-option-type-nested-builder.fw-option-type-builder > .builder-items-types {
+	margin: 0;
+	padding: 0;
+	background: #f6f7f7;
+	border-bottom: 1px solid #e3e4e6;
+}
+.fw-option-type-nested-builder.fw-option-type-builder > .builder-items-types > .fw-options-tabs-wrapper {
+	padding-bottom: 0;
+	border-bottom: 0;
+	background: transparent;
+}
+.fw-option-type-nested-builder.fw-option-type-builder > .builder-items-types .fw-options-tabs-contents {
+	margin: 0 !important;
+}
+
+/* Canvas = the lower part of the card. A single soft-dashed drop area, no double frame. */
+.fw-option-type-nested-builder.fw-option-type-builder > .builder-root-items {
+	padding: 10px;
+	border-top: 0;
+}
+.fw-option-type-nested-builder.fw-option-type-builder > .builder-root-items > .builder-items {
+	min-height: 88px;
+	padding: 10px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 6px;
+	background: #fbfbfc;
+}
+
+/* Empty-state hint so an empty canvas reads as "ready", not "failed to load". The
+ * root sortable holds no template markup until the user drops something, so :empty
+ * matches while it is untouched; the hint disappears the moment an item lands. */
+.fw-option-type-nested-builder.fw-option-type-builder > .builder-root-items > .builder-items:empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+.fw-option-type-nested-builder.fw-option-type-builder > .builder-root-items > .builder-items:empty::before {
+	content: 'Drag a Pane, Box, or Text item here to start building';
+	color: #8c9196;
+	font-size: 12px;
+	font-style: italic;
+}
+/* While dragging, brighten the drop target so it's obvious where items land. */
+body.fw-builder-dragging .fw-option-type-nested-builder > .builder-root-items > .builder-items {
+	border-color: var(--u-accent, #3858e9);
+	background: #f4f6ff;
+}
+
+/* Align the card with the box's content inset. On a full-width (label:false) option
+ * the framework leaves the INPUT column with no side padding — so without this the
+ * canvas sits flush to the box edge. Give it the standard 20px side inset every other
+ * option uses, plus 20px of breathing room below the postbox header so the palette
+ * isn't crammed against the "Nested Builder" title bar. */
+.fw-backend-option-input-type-nested-builder > .fw-inner > .fw-inner-option {
+	padding: 20px 20px 0;
+}
+
+/* Tighten the per-item vertical rhythm inside the option row. */
+.fw-option-type-nested-builder .nb-item { margin: 5px 0; }
+.fw-option-type-nested-builder .nb-box-zone { padding: 6px; }

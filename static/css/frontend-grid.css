@@ -790,6 +790,49 @@
 	.fw-grid > .fw-col-lg-11{grid-column:span 11}
 	.fw-grid > .fw-col-lg-12{grid-column:span 12}
 }
+/* Grid Column Start — place a cell at an exact column (grid-column-start) so an item can sit at,
+   e.g., column 6 without empty spacer cells before it. Scoped under .fw-grid so it's inert in a
+   Flex / Block parent; combine with the span (fw-col-N above) for width. Per-device (base / md / lg). */
+.fw-grid > .fw-col-start-1{grid-column-start:1}
+.fw-grid > .fw-col-start-2{grid-column-start:2}
+.fw-grid > .fw-col-start-3{grid-column-start:3}
+.fw-grid > .fw-col-start-4{grid-column-start:4}
+.fw-grid > .fw-col-start-5{grid-column-start:5}
+.fw-grid > .fw-col-start-6{grid-column-start:6}
+.fw-grid > .fw-col-start-7{grid-column-start:7}
+.fw-grid > .fw-col-start-8{grid-column-start:8}
+.fw-grid > .fw-col-start-9{grid-column-start:9}
+.fw-grid > .fw-col-start-10{grid-column-start:10}
+.fw-grid > .fw-col-start-11{grid-column-start:11}
+.fw-grid > .fw-col-start-12{grid-column-start:12}
+@media (min-width:768px){
+	.fw-grid > .fw-col-start-md-1{grid-column-start:1}
+	.fw-grid > .fw-col-start-md-2{grid-column-start:2}
+	.fw-grid > .fw-col-start-md-3{grid-column-start:3}
+	.fw-grid > .fw-col-start-md-4{grid-column-start:4}
+	.fw-grid > .fw-col-start-md-5{grid-column-start:5}
+	.fw-grid > .fw-col-start-md-6{grid-column-start:6}
+	.fw-grid > .fw-col-start-md-7{grid-column-start:7}
+	.fw-grid > .fw-col-start-md-8{grid-column-start:8}
+	.fw-grid > .fw-col-start-md-9{grid-column-start:9}
+	.fw-grid > .fw-col-start-md-10{grid-column-start:10}
+	.fw-grid > .fw-col-start-md-11{grid-column-start:11}
+	.fw-grid > .fw-col-start-md-12{grid-column-start:12}
+}
+@media (min-width:992px){
+	.fw-grid > .fw-col-start-lg-1{grid-column-start:1}
+	.fw-grid > .fw-col-start-lg-2{grid-column-start:2}
+	.fw-grid > .fw-col-start-lg-3{grid-column-start:3}
+	.fw-grid > .fw-col-start-lg-4{grid-column-start:4}
+	.fw-grid > .fw-col-start-lg-5{grid-column-start:5}
+	.fw-grid > .fw-col-start-lg-6{grid-column-start:6}
+	.fw-grid > .fw-col-start-lg-7{grid-column-start:7}
+	.fw-grid > .fw-col-start-lg-8{grid-column-start:8}
+	.fw-grid > .fw-col-start-lg-9{grid-column-start:9}
+	.fw-grid > .fw-col-start-lg-10{grid-column-start:10}
+	.fw-grid > .fw-col-start-lg-11{grid-column-start:11}
+	.fw-grid > .fw-col-start-lg-12{grid-column-start:12}
+}
 
 /* Auto-row: a BLOCK Div (no d-flex / no fw-grid) that directly holds a fractional-Width
    child (fw-col-*) becomes a flex row, so dropping two 1/2 Divs into a Section lays them

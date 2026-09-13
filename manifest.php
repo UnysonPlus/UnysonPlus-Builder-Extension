@@ -5,7 +5,7 @@ $manifest = array();
 $manifest['name']        = __( 'Builder', 'fw' );
 $manifest['description'] = __( 'Unyson Page Builder Extension', 'fw' );
 
-$manifest['version']     = '1.2.97';
+$manifest['version']     = '1.3.5';
 
 // Repository Info
 $manifest['github_update'] = 'UnysonPlus/UnysonPlus-Builder-Extension';
@@ -28,6 +28,29 @@ $manifest['uri'] = 'http://manual.unyson.io/en/latest/extension/builder/index.ht
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.3.0 - New "Nested Builder" option type (`type => 'nested-builder`). A
+ *          lightweight, EMBEDDABLE page-builder canvas as an option type — it
+ *          subclasses FW_Option_Type_Builder (the same base as form-builder and the
+ *          main page-builder), so it inherits the drag-drop canvas, JSON value
+ *          storage and per-instance init, but registers only a small curated item
+ *          set and pulls in none of the page-builder's post-screen singletons.
+ *          Because init is per-container (like form-builder), multiple instances can
+ *          live inside other elements' option popups — the foundation for rich,
+ *          nested content inside REPEATABLE elements: each top-level item is one
+ *          pane, so Tabs / Accordion / Slider each map top-level items to their
+ *          tabs / rows / slides. v1 items: `pane` (a titled container = one tab/row),
+ *          `box` (a nestable flex/grid container) and `text` (a content leaf); items
+ *          self-register via FW_Option_Type_Builder::register_item_type() and localize
+ *          their JS into window.fwNestedBuilderItems. A container is just a leaf whose
+ *          canvas template includes a `.builder-items` drop-zone; nesting is enabled
+ *          by each container's allowIncomingType() plus a per-instance override of the
+ *          builder's isValidDirectParent() (the base hardcodes only its own
+ *          section/column/flexbox types) so custom containers actually accept drops.
+ *          A front-end renderer (render.php: fw_nested_builder_render / _panes) turns
+ *          the saved JSON tree into HTML and splits top-level items into { title, body }
+ *          panes for the consuming element. Showcased in the theme's Theme Settings
+ *          demo pages.
+ *
  * 1.2.72 - Completed the fifths column family. The grid.columns width set now offers
  *          2/5 (40%), 3/5 (60%) and 4/5 (80%) alongside the existing 1/5 (20%), and the
  *          fifths are relabelled with their percentage — "1/5 (20%)" etc. New grid CSS
