@@ -873,7 +873,9 @@
 .fw-grid-10{grid-template-columns:repeat(10,minmax(0,1fr))}
 .fw-grid-11{grid-template-columns:repeat(11,minmax(0,1fr))}
 .fw-grid-12{grid-template-columns:repeat(12,minmax(0,1fr))}
-.fw-grid > [class*="fw-span-"]{max-width:none}
+/* A Grid child keeps its fw-span-N class for the grid-column span ONLY: its percentage width (the flex-row
+   value) is void in a grid area — 66.67% of an 8-track area drew a bento tile a third short of its tracks. */
+.fw-grid > [class*="fw-span-"],.fw-grid > [class*="fw-fifth-"]{max-width:none;width:auto}
 .fw-flex-row{flex-direction:row!important}
 .fw-flex-row-reverse{flex-direction:row-reverse!important}
 .fw-flex-column{flex-direction:column!important}
@@ -904,26 +906,31 @@
 .fw-self-baseline{align-self:baseline!important}
 .fw-grow-1{flex-grow:1!important}
 .fw-grow-0{flex-grow:0!important}
-.fw-span-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%}
-.fw-span-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%}
-.fw-span-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%}
-.fw-span-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%}
-.fw-span-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%}
-.fw-span-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%}
-.fw-span-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%}
-.fw-span-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%}
-.fw-span-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%}
-.fw-span-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%}
-.fw-span-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%}
-.fw-span-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%}
+.fw-span-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%;--fw-span-frac:0.0833333}
+.fw-span-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%;--fw-span-frac:0.166667}
+.fw-span-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%;--fw-span-frac:0.25}
+.fw-span-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%;--fw-span-frac:0.333333}
+.fw-span-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%;--fw-span-frac:0.416667}
+.fw-span-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%;--fw-span-frac:0.5}
+.fw-span-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%;--fw-span-frac:0.583333}
+.fw-span-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%;--fw-span-frac:0.666667}
+.fw-span-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%;--fw-span-frac:0.75}
+.fw-span-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%;--fw-span-frac:0.833333}
+.fw-span-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%;--fw-span-frac:0.916667}
+.fw-span-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%;--fw-span-frac:1}
 /* fw-fifth-N = a fifth width (N/5), joining the same shared-class + --fw-span-pct mechanism as the
    twelfths so fifths need no per-cell width <style>. Named by numerator (not a 60-base span) to
    avoid colliding with the existing 12-based .fw-col-N / .fw-span-N column classes. */
-.fw-fifth-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%}
-.fw-fifth-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%}
-.fw-fifth-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%}
-.fw-fifth-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%}
-.fw-flex > [class*="fw-span-"],.fw-flex > [class*="fw-fifth-"]{width:calc(var(--fw-span-pct,100%) - var(--fw-flex-gap,0px))}
+.fw-fifth-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%;--fw-span-frac:0.2}
+.fw-fifth-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%;--fw-span-frac:0.4}
+.fw-fifth-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%;--fw-span-frac:0.6}
+.fw-fifth-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%;--fw-span-frac:0.8}
+/* A span cell in a GAPPED flex row: the row's gaps are shared by the cells in proportion to their span — a cell takes
+   `pct - gap * (1 - frac)` (a third of the row loses two thirds of one gap), so cells whose spans sum to 12 fill the row
+   EXACTLY with N-1 gaps between them. Subtracting a whole gap from every cell left the row one gap short — a trailing
+   strip after the last column of every 3-up card row. `--fw-span-frac` is the span as a number (the `%` cannot be
+   multiplied by a length in calc()). */
+.fw-flex > [class*="fw-span-"],.fw-flex > [class*="fw-fifth-"]{width:calc(var(--fw-span-pct,100%) - var(--fw-flex-gap,0px) * (1 - var(--fw-span-frac,1)))}
 /* Content-sizing widths as shared classes (intrinsic sizing) — no per-cell width <style>. */
 .fw-w-fit{flex:0 0 auto;width:fit-content;width:-moz-fit-content;max-width:none}
 .fw-w-max{flex:0 0 auto;width:max-content;max-width:none}
@@ -984,22 +991,22 @@
 	.fw-self-md-baseline{align-self:baseline!important}
 	.fw-grow-md-1{flex-grow:1!important}
 	.fw-grow-md-0{flex-grow:0!important}
-	.fw-span-md-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%}
-	.fw-span-md-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%}
-	.fw-span-md-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%}
-	.fw-span-md-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%}
-	.fw-span-md-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%}
-	.fw-span-md-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%}
-	.fw-span-md-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%}
-	.fw-span-md-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%}
-	.fw-span-md-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%}
-	.fw-span-md-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%}
-	.fw-span-md-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%}
-	.fw-span-md-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%}
-	.fw-fifth-md-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%}
-	.fw-fifth-md-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%}
-	.fw-fifth-md-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%}
-	.fw-fifth-md-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%}
+	.fw-span-md-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%;--fw-span-frac:0.0833333}
+	.fw-span-md-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%;--fw-span-frac:0.166667}
+	.fw-span-md-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%;--fw-span-frac:0.25}
+	.fw-span-md-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%;--fw-span-frac:0.333333}
+	.fw-span-md-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%;--fw-span-frac:0.416667}
+	.fw-span-md-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%;--fw-span-frac:0.5}
+	.fw-span-md-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%;--fw-span-frac:0.583333}
+	.fw-span-md-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%;--fw-span-frac:0.666667}
+	.fw-span-md-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%;--fw-span-frac:0.75}
+	.fw-span-md-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%;--fw-span-frac:0.833333}
+	.fw-span-md-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%;--fw-span-frac:0.916667}
+	.fw-span-md-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%;--fw-span-frac:1}
+	.fw-fifth-md-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%;--fw-span-frac:0.2}
+	.fw-fifth-md-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%;--fw-span-frac:0.4}
+	.fw-fifth-md-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%;--fw-span-frac:0.6}
+	.fw-fifth-md-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%;--fw-span-frac:0.8}
 	.fw-w-md-fit{flex:0 0 auto;width:fit-content;width:-moz-fit-content;max-width:none}
 	.fw-w-md-max{flex:0 0 auto;width:max-content;max-width:none}
 	.fw-w-md-min{flex:0 0 auto;width:min-content;max-width:none}
@@ -1047,22 +1054,22 @@
 	.fw-self-lg-baseline{align-self:baseline!important}
 	.fw-grow-lg-1{flex-grow:1!important}
 	.fw-grow-lg-0{flex-grow:0!important}
-	.fw-span-lg-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%}
-	.fw-span-lg-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%}
-	.fw-span-lg-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%}
-	.fw-span-lg-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%}
-	.fw-span-lg-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%}
-	.fw-span-lg-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%}
-	.fw-span-lg-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%}
-	.fw-span-lg-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%}
-	.fw-span-lg-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%}
-	.fw-span-lg-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%}
-	.fw-span-lg-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%}
-	.fw-span-lg-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%}
-	.fw-fifth-lg-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%}
-	.fw-fifth-lg-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%}
-	.fw-fifth-lg-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%}
-	.fw-fifth-lg-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%}
+	.fw-span-lg-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%;--fw-span-frac:0.0833333}
+	.fw-span-lg-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%;--fw-span-frac:0.166667}
+	.fw-span-lg-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%;--fw-span-frac:0.25}
+	.fw-span-lg-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%;--fw-span-frac:0.333333}
+	.fw-span-lg-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%;--fw-span-frac:0.416667}
+	.fw-span-lg-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%;--fw-span-frac:0.5}
+	.fw-span-lg-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%;--fw-span-frac:0.583333}
+	.fw-span-lg-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%;--fw-span-frac:0.666667}
+	.fw-span-lg-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%;--fw-span-frac:0.75}
+	.fw-span-lg-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%;--fw-span-frac:0.833333}
+	.fw-span-lg-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%;--fw-span-frac:0.916667}
+	.fw-span-lg-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%;--fw-span-frac:1}
+	.fw-fifth-lg-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%;--fw-span-frac:0.2}
+	.fw-fifth-lg-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%;--fw-span-frac:0.4}
+	.fw-fifth-lg-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%;--fw-span-frac:0.6}
+	.fw-fifth-lg-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%;--fw-span-frac:0.8}
 	.fw-w-lg-fit{flex:0 0 auto;width:fit-content;width:-moz-fit-content;max-width:none}
 	.fw-w-lg-max{flex:0 0 auto;width:max-content;max-width:none}
 	.fw-w-lg-min{flex:0 0 auto;width:min-content;max-width:none}
