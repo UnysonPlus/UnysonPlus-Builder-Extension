@@ -930,7 +930,7 @@
    EXACTLY with N-1 gaps between them. Subtracting a whole gap from every cell left the row one gap short — a trailing
    strip after the last column of every 3-up card row. `--fw-span-frac` is the span as a number (the `%` cannot be
    multiplied by a length in calc()). */
-.fw-flex > [class*="fw-span-"],.fw-flex > [class*="fw-fifth-"]{width:calc(var(--fw-span-pct,100%) - var(--fw-flex-gap,0px) * (1 - var(--fw-span-frac,1)))}
+.fw-flex > [class*="fw-span-"],.fw-flex > [class*="fw-fifth-"]{width:calc(var(--fw-span-pct,100%) - var(--fw-parent-gap,var(--fw-flex-gap,0px)) * (1 - var(--fw-span-frac,1)))}
 /* Content-sizing widths as shared classes (intrinsic sizing) — no per-cell width <style>. */
 .fw-w-fit{flex:0 0 auto;width:fit-content;width:-moz-fit-content;max-width:none}
 .fw-w-max{flex:0 0 auto;width:max-content;max-width:none}
