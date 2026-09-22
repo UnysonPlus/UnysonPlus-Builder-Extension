@@ -28,8 +28,13 @@
  * sortable the helper is currently inside — so the inline `top` / `left`
  * are evaluated against a single consistent coordinate system. Only active
  * during drag; everything reverts on `stop`.
+ *
+ * EXCEPT in full screen: there the wrapper is `position: fixed` (fullscreen.css)
+ * and is ALREADY a containing block, so it is a perfectly good offsetParent —
+ * forcing it back to `relative` mid-drag drops it out of the fixed layer and
+ * the panel collapses to its in-flow size until the drop.
  */
-body.fw-builder-dragging .fw-option-type-builder {
+body.fw-builder-dragging .fw-option-type-builder:not(.builder-fullscreen) {
 	position: relative;
 }
 body.fw-builder-dragging .fw-option-type-builder .builder-root-items,
@@ -143,8 +148,10 @@ body.fw-builder-dragging .fw-option-type-builder .builder-item.fw-builder-item-d
 	font-weight: 400 !important;
 	padding: 1px 14px 0 14px !important;
 	line-height: 25px !important;
-	color: #222222 !important;
-	background-color: #F1F1F1;
+	/* Was a hardcoded #222 on #F1F1F1, which is near-invisible once the admin
+	   runs a dark skin. Tracks the shared token set instead. */
+	color: var(--u-ink, #222222) !important;
+	background-color: var(--u-raised, #F1F1F1);
 }
 
 .fw-option-type-builder > .builder-items-types .fw-options-tabs-wrapper.fw-options-tabs-first-level .ui-tabs-nav .ui-state-active a {
