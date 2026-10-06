@@ -847,7 +847,20 @@
    viewport minus the gutter) on every section-tag Div, so it's a shared class emitted by the view
    instead of a per-element inline style. An EXPLICIT Content Width value still gets its own rule
    (in the consolidated footer stylesheet). */
-.fw-contained{max-width:min(var(--container-max-desktop, var(--site-max-width, 1170px)), calc(100% - 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem))));margin-left:auto;margin-right:auto}
+.fw-contained{max-width:min(var(--container-max-desktop, var(--site-max-width, 1170px)), calc(100% - 2 * var(--fw-inner-gutter, var(--container-gutter, clamp(1.25rem, 3vw, 2rem)))));margin-left:auto;margin-right:auto}
+/* An ancestor that has ALREADY applied the site container AND its gutter tells its descendants not to
+   subtract that gutter a second time. Without this, `.fw-contained` inside the page-builder wrapper
+   re-applied it: the wrapper is already the container (1368px at x=36 on a 1440 viewport, matching the
+   source exactly), and the section's flexbox then capped to `100% - 2*gutter` OF THAT — 1336px at x=52.
+   Every body section came out 2*gutter narrower than the header and footer, which use `.fw-container`
+   and get it right, so the whole page body sat visibly inset from its own chrome.
+   The `100% - 2*gutter` term is a VIEWPORT safety gutter and is still correct when `.fw-contained` is
+   used standalone (a flexbox whose parent really is full-width), which is why it is scoped off here
+   rather than deleted. `.fw-full-bleed` reads `--container-gutter` directly, so it is unaffected. */
+.fw-page-builder-content,
+.fw-container,
+.fw-full-bleed { --fw-inner-gutter: var(--container-gutter-spent, 0px); }
+
 /* Full-Width Band: a Section stretches edge-to-edge (its background is full-bleed) while its CONTENT
    is inset by symmetric padding to --fw-cw (defaulting to the site container), always keeping at
    least the site gutter. No max-width on the band itself; the padding does the containment, so it
@@ -957,7 +970,7 @@
 }
 @media (max-width:767.98px){
 	.fw-grid.fw-grid-collapse,.fw-grid.fw-grid-collapse-1{grid-template-columns:1fr!important}
-	.fw-grid.fw-grid-collapse-1 > *{grid-column:auto!important}
+	.fw-grid.fw-grid-collapse > *,.fw-grid.fw-grid-collapse-1 > *{grid-column:auto!important;grid-row:auto!important} /* spans + row placement reset when the grid stacks */
 	.fw-flex.fw-collapse > *{flex-basis:100%!important;max-width:100%!important;width:100%!important}
 }
 @media (min-width:768px){
@@ -1085,4 +1098,33 @@
 	.fw-grid > .fw-span-lg-10{grid-column:span 10}
 	.fw-grid > .fw-span-lg-11{grid-column:span 11}
 	.fw-grid > .fw-span-lg-12{grid-column:span 12}
+}
+
+/* A Grid STACKED in a column flex parent (a band — the common case) is measured for height before its
+   width is known: an auto-fit grid as ONE column (then 2 real rows stretch over 8 rows of height), and
+   aspect-ratio tiles at zero width (the band ends before them). A definite width resolves the tracks
+   first. :where() keeps this at zero specificity, so any Width Override still wins; a parent that turns
+   into a ROW on a larger device hands the grid back to content sizing. */
+:where(.fw-flex-column, .fw-flex-column-reverse) > :where(.fw-grid){width:100%}
+@media (min-width:768px){
+	:where(.fw-flex-md-row, .fw-flex-md-row-reverse) > :where(.fw-grid){width:auto}
+	:where(.fw-flex-md-column, .fw-flex-md-column-reverse) > :where(.fw-grid){width:100%}
+}
+@media (min-width:992px){
+	:where(.fw-flex-lg-row, .fw-flex-lg-row-reverse) > :where(.fw-grid){width:auto}
+	:where(.fw-flex-lg-column, .fw-flex-lg-column-reverse) > :where(.fw-grid){width:100%}
+}
+
+/* A COLUMN never wraps by default. `.fw-flex` turns wrapping on for every Flexbox (right for rows), but in a
+   column a wrapping container sizes each line to its widest child's natural width — one code sample with a
+   long unbroken line made a whole band 1000px wide on a 820px tablet, and every sibling stretched to match.
+   Wrap is a row option (the Flexbox help says so); the explicit Wrap classes are !important and still win. */
+.fw-flex.fw-flex-column,.fw-flex.fw-flex-column-reverse{flex-wrap:nowrap}
+@media (min-width:768px){
+	.fw-flex.fw-flex-md-column,.fw-flex.fw-flex-md-column-reverse{flex-wrap:nowrap}
+	.fw-flex.fw-flex-md-row,.fw-flex.fw-flex-md-row-reverse{flex-wrap:wrap}
+}
+@media (min-width:992px){
+	.fw-flex.fw-flex-lg-column,.fw-flex.fw-flex-lg-column-reverse{flex-wrap:nowrap}
+	.fw-flex.fw-flex-lg-row,.fw-flex.fw-flex-lg-row-reverse{flex-wrap:wrap}
 }
