@@ -456,7 +456,7 @@ jQuery( document ).ready( function ( $ ) {
 			 * `null` here means the section/column scaffold could not be built,
 			 * and the ONLY reason for that is a builder that registers no
 			 * `section`/`column` item types at all — i.e. a FLAT builder such as
-			 * the newsletter-crm email builder or a custom one. Those have
+			 * the CRM email builder or a custom one. Those have
 			 * nowhere to scaffold to and root IS their only container, so
 			 * returning null made every drop and click silently do nothing
 			 * ("Could not resolve a destination for ..."). Fall back to root.

@@ -362,6 +362,13 @@
 	.fw-order-xl-3 { order: 3; }
 	.fw-order-xl-4 { order: 4; }
 	.fw-order-xl-5 { order: 5; }
+	.fw-order-xl-6 { order: 6; }
+	.fw-order-xl-7 { order: 7; }
+	.fw-order-xl-8 { order: 8; }
+	.fw-order-xl-9 { order: 9; }
+	.fw-order-xl-10 { order: 10; }
+	.fw-order-xl-11 { order: 11; }
+	.fw-order-xl-12 { order: 12; }
 }
 
 
@@ -790,6 +797,20 @@
 	.fw-grid > .fw-col-lg-11{grid-column:span 11}
 	.fw-grid > .fw-col-lg-12{grid-column:span 12}
 }
+@media (min-width:1200px){
+	.fw-grid > .fw-col-xl-1{grid-column:span 1}
+	.fw-grid > .fw-col-xl-2{grid-column:span 2}
+	.fw-grid > .fw-col-xl-3{grid-column:span 3}
+	.fw-grid > .fw-col-xl-4{grid-column:span 4}
+	.fw-grid > .fw-col-xl-5{grid-column:span 5}
+	.fw-grid > .fw-col-xl-6{grid-column:span 6}
+	.fw-grid > .fw-col-xl-7{grid-column:span 7}
+	.fw-grid > .fw-col-xl-8{grid-column:span 8}
+	.fw-grid > .fw-col-xl-9{grid-column:span 9}
+	.fw-grid > .fw-col-xl-10{grid-column:span 10}
+	.fw-grid > .fw-col-xl-11{grid-column:span 11}
+	.fw-grid > .fw-col-xl-12{grid-column:span 12}
+}
 /* Grid Column Start — place a cell at an exact column (grid-column-start) so an item can sit at,
    e.g., column 6 without empty spacer cells before it. Scoped under .fw-grid so it's inert in a
    Flex / Block parent; combine with the span (fw-col-N above) for width. Per-device (base / md / lg). */
@@ -833,6 +854,20 @@
 	.fw-grid > .fw-col-start-lg-11{grid-column-start:11}
 	.fw-grid > .fw-col-start-lg-12{grid-column-start:12}
 }
+@media (min-width:1200px){
+	.fw-grid > .fw-col-start-xl-1{grid-column-start:1}
+	.fw-grid > .fw-col-start-xl-2{grid-column-start:2}
+	.fw-grid > .fw-col-start-xl-3{grid-column-start:3}
+	.fw-grid > .fw-col-start-xl-4{grid-column-start:4}
+	.fw-grid > .fw-col-start-xl-5{grid-column-start:5}
+	.fw-grid > .fw-col-start-xl-6{grid-column-start:6}
+	.fw-grid > .fw-col-start-xl-7{grid-column-start:7}
+	.fw-grid > .fw-col-start-xl-8{grid-column-start:8}
+	.fw-grid > .fw-col-start-xl-9{grid-column-start:9}
+	.fw-grid > .fw-col-start-xl-10{grid-column-start:10}
+	.fw-grid > .fw-col-start-xl-11{grid-column-start:11}
+	.fw-grid > .fw-col-start-xl-12{grid-column-start:12}
+}
 
 /* Auto-row: a BLOCK Div (no d-flex / no fw-grid) that directly holds a fractional-Width
    child (fw-col-*) becomes a flex row, so dropping two 1/2 Divs into a Section lays them
@@ -843,6 +878,10 @@
 /* ===== Modern fw-* utility layer (house-namespaced; aliases the Bootstrap-style
    classes above). Emitted by the flexbox Div. fw-span-N = 12-col width / grid span. ===== */
 .fw-flex{display:flex!important;flex-wrap:wrap}
+/* Inline-level flex container (Display = Inline Flex) — same flex behaviour as .fw-flex (every
+   fw-flex, fw-justify and fw-items arrangement class applies to it), but inline-level so it shrinks
+   to its content and sits in the text flow. */
+.fw-inline-flex{display:inline-flex!important;flex-wrap:wrap}
 /* Default Section content container — the same centred max-width (site width, but never past the
    viewport minus the gutter) on every section-tag Div, so it's a shared class emitted by the view
    instead of a per-element inline style. An EXPLICIT Content Width value still gets its own rule
@@ -1004,6 +1043,8 @@
 	.fw-self-md-baseline{align-self:baseline!important}
 	.fw-grow-md-1{flex-grow:1!important}
 	.fw-grow-md-0{flex-grow:0!important}
+	.fw-shrink-md-0{flex-shrink:0!important}
+	.fw-shrink-md-1{flex-shrink:1!important}
 	.fw-span-md-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%;--fw-span-frac:0.0833333}
 	.fw-span-md-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%;--fw-span-frac:0.166667}
 	.fw-span-md-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%;--fw-span-frac:0.25}
@@ -1067,6 +1108,8 @@
 	.fw-self-lg-baseline{align-self:baseline!important}
 	.fw-grow-lg-1{flex-grow:1!important}
 	.fw-grow-lg-0{flex-grow:0!important}
+	.fw-shrink-lg-0{flex-shrink:0!important}
+	.fw-shrink-lg-1{flex-shrink:1!important}
 	.fw-span-lg-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%;--fw-span-frac:0.0833333}
 	.fw-span-lg-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%;--fw-span-frac:0.166667}
 	.fw-span-lg-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%;--fw-span-frac:0.25}
@@ -1127,4 +1170,83 @@
 @media (min-width:992px){
 	.fw-flex.fw-flex-lg-column,.fw-flex.fw-flex-lg-column-reverse{flex-wrap:nowrap}
 	.fw-flex.fw-flex-lg-row,.fw-flex.fw-flex-lg-row-reverse{flex-wrap:wrap}
+}
+
+/* === XL tier (min-width 1200px) — house fw-* responsive layer, generated to mirror the lg block
+   above. Added with the XL breakpoint. The Bootstrap-style fw-col-xl, fw-offset-xl and fw-order-xl
+   classes live earlier in this file; this is the flex/justify/align/span/fifth/width + grid-span layer. */
+@media (min-width:1200px){
+	.fw-flex-xl-row{flex-direction:row!important}
+	.fw-flex-xl-row-reverse{flex-direction:row-reverse!important}
+	.fw-flex-xl-column{flex-direction:column!important}
+	.fw-flex-xl-column-reverse{flex-direction:column-reverse!important}
+	.fw-flex-xl-wrap{flex-wrap:wrap!important}
+	.fw-flex-xl-nowrap{flex-wrap:nowrap!important}
+	.fw-justify-xl-start{justify-content:flex-start!important}
+	.fw-justify-xl-center{justify-content:center!important}
+	.fw-justify-xl-end{justify-content:flex-end!important}
+	.fw-justify-xl-between{justify-content:space-between!important}
+	.fw-justify-xl-around{justify-content:space-around!important}
+	.fw-justify-xl-evenly{justify-content:space-evenly!important}
+	.fw-items-xl-start{align-items:flex-start!important}
+	.fw-items-xl-center{align-items:center!important}
+	.fw-items-xl-end{align-items:flex-end!important}
+	.fw-items-xl-stretch{align-items:stretch!important}
+	.fw-items-xl-baseline{align-items:baseline!important}
+	.fw-content-xl-start{align-content:flex-start!important}
+	.fw-content-xl-center{align-content:center!important}
+	.fw-content-xl-end{align-content:flex-end!important}
+	.fw-content-xl-between{align-content:space-between!important}
+	.fw-content-xl-around{align-content:space-around!important}
+	.fw-content-xl-stretch{align-content:stretch!important}
+	.fw-self-xl-start{align-self:flex-start!important}
+	.fw-self-xl-center{align-self:center!important}
+	.fw-self-xl-end{align-self:flex-end!important}
+	.fw-self-xl-stretch{align-self:stretch!important}
+	.fw-self-xl-baseline{align-self:baseline!important}
+	.fw-grow-xl-1{flex-grow:1!important}
+	.fw-grow-xl-0{flex-grow:0!important}
+	.fw-shrink-xl-0{flex-shrink:0!important}
+	.fw-shrink-xl-1{flex-shrink:1!important}
+	.fw-span-xl-1{flex:0 1 auto;min-width:0;width:8.33333333%;--fw-span-pct:8.33333333%;--fw-span-frac:0.0833333}
+	.fw-span-xl-2{flex:0 1 auto;min-width:0;width:16.66666667%;--fw-span-pct:16.66666667%;--fw-span-frac:0.166667}
+	.fw-span-xl-3{flex:0 1 auto;min-width:0;width:25%;--fw-span-pct:25%;--fw-span-frac:0.25}
+	.fw-span-xl-4{flex:0 1 auto;min-width:0;width:33.33333333%;--fw-span-pct:33.33333333%;--fw-span-frac:0.333333}
+	.fw-span-xl-5{flex:0 1 auto;min-width:0;width:41.66666667%;--fw-span-pct:41.66666667%;--fw-span-frac:0.416667}
+	.fw-span-xl-6{flex:0 1 auto;min-width:0;width:50%;--fw-span-pct:50%;--fw-span-frac:0.5}
+	.fw-span-xl-7{flex:0 1 auto;min-width:0;width:58.33333333%;--fw-span-pct:58.33333333%;--fw-span-frac:0.583333}
+	.fw-span-xl-8{flex:0 1 auto;min-width:0;width:66.66666667%;--fw-span-pct:66.66666667%;--fw-span-frac:0.666667}
+	.fw-span-xl-9{flex:0 1 auto;min-width:0;width:75%;--fw-span-pct:75%;--fw-span-frac:0.75}
+	.fw-span-xl-10{flex:0 1 auto;min-width:0;width:83.33333333%;--fw-span-pct:83.33333333%;--fw-span-frac:0.833333}
+	.fw-span-xl-11{flex:0 1 auto;min-width:0;width:91.66666667%;--fw-span-pct:91.66666667%;--fw-span-frac:0.916667}
+	.fw-span-xl-12{flex:0 1 auto;min-width:0;width:100%;--fw-span-pct:100%;--fw-span-frac:1}
+	.fw-fifth-xl-1{flex:0 1 auto;min-width:0;width:20%;--fw-span-pct:20%;--fw-span-frac:0.2}
+	.fw-fifth-xl-2{flex:0 1 auto;min-width:0;width:40%;--fw-span-pct:40%;--fw-span-frac:0.4}
+	.fw-fifth-xl-3{flex:0 1 auto;min-width:0;width:60%;--fw-span-pct:60%;--fw-span-frac:0.6}
+	.fw-fifth-xl-4{flex:0 1 auto;min-width:0;width:80%;--fw-span-pct:80%;--fw-span-frac:0.8}
+	.fw-w-xl-fit{flex:0 0 auto;width:fit-content;width:-moz-fit-content;max-width:none}
+	.fw-w-xl-max{flex:0 0 auto;width:max-content;max-width:none}
+	.fw-w-xl-min{flex:0 0 auto;width:min-content;max-width:none}
+	.fw-grid > .fw-span-xl-1{grid-column:span 1}
+	.fw-grid > .fw-span-xl-2{grid-column:span 2}
+	.fw-grid > .fw-span-xl-3{grid-column:span 3}
+	.fw-grid > .fw-span-xl-4{grid-column:span 4}
+	.fw-grid > .fw-span-xl-5{grid-column:span 5}
+	.fw-grid > .fw-span-xl-6{grid-column:span 6}
+	.fw-grid > .fw-span-xl-7{grid-column:span 7}
+	.fw-grid > .fw-span-xl-8{grid-column:span 8}
+	.fw-grid > .fw-span-xl-9{grid-column:span 9}
+	.fw-grid > .fw-span-xl-10{grid-column:span 10}
+	.fw-grid > .fw-span-xl-11{grid-column:span 11}
+	.fw-grid > .fw-span-xl-12{grid-column:span 12}
+}
+
+@media (min-width:1200px){
+	:where(.fw-flex-xl-row, .fw-flex-xl-row-reverse) > :where(.fw-grid){width:auto}
+	:where(.fw-flex-xl-column, .fw-flex-xl-column-reverse) > :where(.fw-grid){width:100%}
+}
+
+@media (min-width:1200px){
+	.fw-flex.fw-flex-xl-column,.fw-flex.fw-flex-xl-column-reverse{flex-wrap:nowrap}
+	.fw-flex.fw-flex-xl-row,.fw-flex.fw-flex-xl-row-reverse{flex-wrap:wrap}
 }
