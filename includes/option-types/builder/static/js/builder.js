@@ -442,6 +442,26 @@ jQuery( document ).ready( function ( $ ) {
 				return section ? section.get( '_items' ) : this.rootItems;
 			}
 
+			// FLAT builder (no column AND no flexbox CONTAINER type registered — the
+			// form builder, the CRM email builder, any custom flat builder): content has
+			// no section/column hierarchy to live in, so it belongs directly at root.
+			// Return root HERE, before ensureColumn() can run, because ensureColumn()
+			// calls ensureSection() for its side effect — and in a flat builder that
+			// ALSO registers a type literally named 'section' (the form builder's
+			// "About you" heading field), ensureSection() succeeds and drops that heading
+			// in, then can't build the column it wanted, so the field still lands at root
+			// but a stray "About you" section has already appeared on every add. A
+			// registered heading type is NOT a layout container, so it must not keep this
+			// builder off the flat path. (The old null-fallback below only caught builders
+			// that register NEITHER section nor column; it missed this one.)
+			if (
+				! this.getRegisteredItemClassByType( 'column' )
+				&&
+				! this.getRegisteredItemClassByType( 'flexbox' )
+			) {
+				return this.rootItems;
+			}
+
 			// Modern default: a loose content element lands in a Div tagged <section> (a contained
 			// content band), NOT a Bootstrap section > 1/1 column. Falls back to the legacy column
 			// scaffold when the flexbox (Div) item type isn't registered (flat / custom builders).
